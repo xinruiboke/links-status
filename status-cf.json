@@ -2,31 +2,19 @@
   "https://www.grbj.cn": {
     "success": true,
     "status": 200,
-    "latency": 0.54,
-    "timestamp": "2025-08-14 13:42:01"
+    "latency": 0.55,
+    "timestamp": "2025-08-14 14:00:18"
   },
-  "https://www.pengqi.club": {
-    "success": false,
-    "status": 403,
-    "latency": -1,
-    "timestamp": "2025-08-14 13:42:02"
-  },
-  "https://blog.starsharbor.com": {
+  "https://okang.top/": {
     "success": true,
     "status": 200,
-    "latency": 1.34,
-    "timestamp": "2025-08-14 13:42:02"
-  },
-  "https://www.cnup.top": {
-    "success": false,
-    "status": 502,
-    "latency": -1,
-    "timestamp": "2025-08-14 13:42:04"
+    "latency": 3.05,
+    "timestamp": "2025-08-14 14:00:20"
   },
   "https://www.nmwbk.com": {
     "success": false,
     "status": 524,
     "latency": -1,
-    "timestamp": "2025-08-14 13:42:33"
+    "timestamp": "2025-08-14 14:00:49"
   }
 }
