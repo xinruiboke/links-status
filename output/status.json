@@ -1,7 +1,7 @@
 {
-  "timestamp": "2025-08-14 14:53:15",
-  "accessible_count": 18,
-  "inaccessible_count": 2,
+  "timestamp": "2025-08-14 14:56:48",
+  "accessible_count": 19,
+  "inaccessible_count": 1,
   "total_count": 20,
   "link_status": [
     {
@@ -88,7 +88,7 @@
       "name": "广然笔记",
       "link": "https://www.grbj.cn",
       "favicon": "https://www.grbj.cn/favicon.ico",
-      "latency": 0.46,
+      "latency": 0.36,
       "success": true,
       "error_count": 0
     },
@@ -96,9 +96,9 @@
       "name": "淇云博客",
       "link": "https://www.pengqi.club",
       "favicon": "https://tc.pengqi.club/img/2023/01/17/CcxI.png",
-      "latency": -1,
-      "success": false,
-      "error_count": 1
+      "latency": 0,
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "码上星辰的技术札记",
@@ -130,7 +130,7 @@
       "favicon": "https://oss.nmwbk.com/wp-content/uploads/2023/05/20230511083703532.ico",
       "latency": -1,
       "success": false,
-      "error_count": 4
+      "error_count": 1
     },
     {
       "name": "伍柒柒",

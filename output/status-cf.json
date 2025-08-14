@@ -2,19 +2,13 @@
   "https://www.grbj.cn": {
     "success": true,
     "status": 200,
-    "latency": 0.46,
-    "timestamp": "2025-08-14 14:52:43"
-  },
-  "https://www.pengqi.club": {
-    "success": false,
-    "status": 403,
-    "latency": -1,
-    "timestamp": "2025-08-14 14:52:43"
+    "latency": 0.36,
+    "timestamp": "2025-08-14 14:56:31"
   },
   "https://www.nmwbk.com": {
     "success": false,
-    "status": 554,
+    "status": 502,
     "latency": -1,
-    "timestamp": "2025-08-14 14:53:15"
+    "timestamp": "2025-08-14 14:56:48"
   }
 }
