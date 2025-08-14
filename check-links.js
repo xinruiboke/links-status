@@ -107,40 +107,73 @@ async function fetchSourceLinks() {
   }
 }
 
-async function checkLink(url, name) {
-  try {
-    console.log(`🔍 检测 ${name} (${url})...`);
-    const startTime = Date.now();
-    const response = await fetch(url, {
-      headers: CONFIG.request_headers,
-      redirect: 'follow',
-      timeout: CONFIG.detection.timeout
-    });
-    const latency = Math.round((Date.now() - startTime) / 10) / 100;
-    
-    const success = response.status >= CONFIG.detection.success_status_min && 
-                   response.status <= CONFIG.detection.success_status_max;
-    if (success) {
-      console.log(`✅ ${name}: 检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
-    } else {
-      console.log(`❌ ${name}: 检测失败 (状态码: ${response.status})`);
+async function checkLinkWithRetry(url, name) {
+  const maxAttempts = CONFIG.detection.retry.enabled ? CONFIG.detection.retry.max_attempts : 1;
+  const retryDelay = CONFIG.detection.retry.delay;
+  
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      if (attempt > 1) {
+        console.log(`🔄 ${name}: 第${attempt}次重试...`);
+        // 重试前等待
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      } else {
+        console.log(`🔍 检测 ${name} (${url})...`);
+      }
+      
+      const startTime = Date.now();
+      const response = await fetch(url, {
+        headers: CONFIG.request_headers,
+        redirect: 'follow',
+        timeout: CONFIG.detection.timeout
+      });
+      const latency = Math.round((Date.now() - startTime) / 10) / 100;
+      
+      const success = response.status >= CONFIG.detection.success_status_min && 
+                     response.status <= CONFIG.detection.success_status_max;
+      
+      if (success) {
+        if (attempt > 1) {
+          console.log(`✅ ${name}: 第${attempt}次重试成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
+        } else {
+          console.log(`✅ ${name}: 检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
+        }
+        
+        return {
+          success: true,
+          latency: latency,
+          status: response.status,
+          attempts: attempt
+        };
+      } else {
+        if (attempt < maxAttempts) {
+          console.log(`⚠️  ${name}: 第${attempt}次检测失败 (状态码: ${response.status}), 准备重试...`);
+        } else {
+          console.log(`❌ ${name}: 第${attempt}次检测失败 (状态码: ${response.status}), 已达到最大重试次数`);
+        }
+      }
+      
+    } catch (error) {
+      if (attempt < maxAttempts) {
+        console.log(`⚠️  ${name}: 第${attempt}次检测异常 - ${error.message}, 准备重试...`);
+      } else {
+        console.error(`❌ ${name}: 第${attempt}次检测异常 - ${error.message}, 已达到最大重试次数`);
+      }
     }
-    
-    return {
-      success,
-      latency: success ? latency : -1,
-      status: response.status
-    };
-  } catch (error) {
-    console.error(`❌ ${name}: 检测异常 - ${error.message}`);
-    
-    return {
-      success: false,
-      latency: -1,
-      status: 0,
-      error: error.message
-    };
   }
+  
+  // 所有重试都失败了
+  return {
+    success: false,
+    latency: -1,
+    status: 0,
+    error: `经过${maxAttempts}次尝试后仍然失败`,
+    attempts: maxAttempts
+  };
+}
+
+async function checkLink(url, name) {
+  return await checkLinkWithRetry(url, name);
 }
 
 // 添加并发控制函数
@@ -188,7 +221,8 @@ async function checkAllLinks() {
         latency: result.latency,
         success: result.success,
         status: result.status,
-        error: result.error
+        error: result.error,
+        attempts: result.attempts || 1
       };
     };
 

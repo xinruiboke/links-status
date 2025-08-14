@@ -5,8 +5,9 @@
 ## ✨ 功能特性
 
 - 🔍 **直接检测**：使用HTTP请求直接检测链接状态，无需依赖第三方API
+- 🔄 **重试机制**：支持配置重试次数和间隔，提高检测可靠性
 - ⚡ **并发处理**：支持批量并发检测，提高检测效率
-- 📊 **详细报告**：生成包含延迟、状态码、异常次数等详细信息的检测报告
+- 📊 **详细报告**：生成包含延迟、状态码、异常次数、重试次数等详细信息的检测报告
 - 🌐 **Web界面**：提供响应式Web界面展示检测结果
 - 🤖 **自动运行**：通过GitHub Actions实现定时自动检测
 - 📈 **异常统计**：记录并统计链接的异常次数，便于问题追踪
@@ -117,6 +118,10 @@ detection:
   timeout: 30000                    # 单个链接检测超时时间（毫秒）
   success_status_min: 200           # 成功状态码范围（最小值）
   success_status_max: 399           # 成功状态码范围（最大值）
+  retry:                            # 重试配置
+    max_attempts: 3                 # 最大重试次数
+    delay: 1000                     # 重试间隔（毫秒）
+    enabled: true                   # 是否启用重试机制
 
 # 检测请求头配置
 request_headers:
@@ -149,6 +154,9 @@ timezone:
 - `detection.batch_delay`: 批次间的延迟时间，避免请求过于频繁
 - `detection.timeout`: 单个链接的检测超时时间
 - `detection.success_status_min/max`: 成功状态码的范围
+- `detection.retry.max_attempts`: 最大重试次数（默认3次）
+- `detection.retry.delay`: 重试间隔时间（毫秒）
+- `detection.retry.enabled`: 是否启用重试机制
 
 #### 请求头配置
 - `request_headers`: 检测链接时使用的HTTP请求头
@@ -163,6 +171,7 @@ timezone:
 
 ### 检测方式
 - **直接HTTP检测**：对每个链接发送HTTP请求，检查响应状态码
+- **重试机制**：支持配置重试次数和间隔，提高检测可靠性
 - **并发控制**：根据配置的批次大小进行并发处理
 - **超时设置**：单个链接检测超时时间可配置
 - **状态判断**：HTTP状态码范围可配置（默认200-399）
@@ -190,7 +199,18 @@ timezone:
       "latency": 0.85,
       "success": true,
       "status": 200,
-      "error_count": 0
+      "error_count": 0,
+      "attempts": 1
+    },
+    {
+      "name": "重试成功的网站",
+      "link": "https://example2.com",
+      "favicon": "https://example2.com/favicon.ico",
+      "latency": 1.2,
+      "success": true,
+      "status": 200,
+      "error_count": 0,
+      "attempts": 2
     }
   ]
 }

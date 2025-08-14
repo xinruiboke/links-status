@@ -21,6 +21,14 @@ detection:
   success_status_min: 200
   # 成功状态码范围（最大值）
   success_status_max: 399
+  # 重试配置
+  retry:
+    # 最大重试次数
+    max_attempts: 3
+    # 重试间隔（毫秒）
+    delay: 1000
+    # 是否启用重试机制
+    enabled: true
 
 # 检测请求头配置
 request_headers:
