@@ -44,6 +44,8 @@ jobs:
         head -10 output/status-cf.json
         echo "=== status-xiaoxiao.json ==="
         head -10 output/status-xiaoxiao.json
+        echo "=== error-count.json ==="
+        head -10 output/error-count.json
         
     - name: 配置Git用户
       run: |
