@@ -1,0 +1,14 @@
+{
+  "name": "link-status-checker",
+  "version": "1.0.0",
+  "description": "友情链接状态检测工具",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "check": "node check-links.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "type": "module"
+} 
