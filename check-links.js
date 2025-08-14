@@ -82,6 +82,9 @@ async function updateErrorCount(domain, isError) {
   return errorCount[domain] || 0;
 }
 
+// 临时存储检测状态，用于最终判断
+const tempCheckResults = new Map();
+
 // 从URL中提取域名
 function extractDomain(url) {
   try {
@@ -127,14 +130,8 @@ async function checkLinkDirectly(url, name) {
     const success = response.status === 200;
     if (success) {
       console.log(`✅ ${name}: 直接检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
-      // 检测成功，重置异常次数
-      const domain = extractDomain(url);
-      await updateErrorCount(domain, false);
     } else {
       console.log(`❌ ${name}: 直接检测失败 (状态码: ${response.status})`);
-      // 检测失败，增加异常次数
-      const domain = extractDomain(url);
-      await updateErrorCount(domain, true);
     }
     
     return {
@@ -144,9 +141,6 @@ async function checkLinkDirectly(url, name) {
     };
   } catch (error) {
     console.error(`❌ ${name}: 直接检测异常 - ${error.message}`);
-    // 检测异常，增加异常次数
-    const domain = extractDomain(url);
-    await updateErrorCount(domain, true);
     
     return {
       success: false,
@@ -214,14 +208,8 @@ async function checkWithAPI(items) {
 
         if (success) {
           console.log(`✅ ${item.name}: API检测成功 (状态码: ${statusCode}, 延迟: ${data.latency || 0}s)`);
-          // API检测成功，重置异常次数
-          const domain = extractDomain(url);
-          await updateErrorCount(domain, false);
         } else {
           console.log(`⚠️  ${item.name}: API检测失败 (状态码: ${statusCode}), 将进行直接检测`);
-          // API检测失败，增加异常次数
-          const domain = extractDomain(url);
-          await updateErrorCount(domain, true);
         }
 
         return {
@@ -232,9 +220,6 @@ async function checkWithAPI(items) {
         };
       } else {
         console.log(`❌ ${item.name}: API请求失败 (HTTP ${response.status})`);
-        // API请求失败，增加异常次数
-        const domain = extractDomain(url);
-        await updateErrorCount(domain, true);
         
         xiaoxiaoStatus[url] = {
           success: false,
@@ -253,9 +238,6 @@ async function checkWithAPI(items) {
       }
     } catch (error) {
       console.error(`❌ ${item.name}: API检测异常 - ${error.message}`);
-      // API检测异常，增加异常次数
-      const domain = extractDomain(url);
-      await updateErrorCount(domain, true);
       
       xiaoxiaoStatus[url] = {
         success: false,
@@ -374,17 +356,38 @@ async function checkAllLinks() {
       }
     });
 
-    // 获取异常次数记录并添加到结果中
+    // 获取异常次数记录
     const errorCount = await loadErrorCount();
+    
+    // 根据最终检测结果更新异常次数
     const finalResultsWithErrorCount = finalResults.map(item => {
       const domain = extractDomain(item.link);
-      const errorCountForDomain = errorCount[domain] || 0;
+      const currentErrorCount = errorCount[domain] || 0;
       
-      return {
-        ...item,
-        error_count: errorCountForDomain
-      };
+      if (item.success) {
+        // 检测成功，重置异常次数
+        if (currentErrorCount > 0) {
+          errorCount[domain] = 0;
+          console.log(`✅ ${domain}: 恢复正常，异常次数已重置 (之前: ${currentErrorCount})`);
+        }
+        return {
+          ...item,
+          error_count: 0
+        };
+      } else {
+        // 检测失败，增加异常次数
+        const newErrorCount = currentErrorCount + 1;
+        errorCount[domain] = newErrorCount;
+        console.log(`⚠️  ${domain}: 异常次数增加到 ${newErrorCount}`);
+        return {
+          ...item,
+          error_count: newErrorCount
+        };
+      }
     });
+
+    // 保存更新后的异常次数
+    await saveErrorCount(errorCount);
 
     const now = new Date();
 
