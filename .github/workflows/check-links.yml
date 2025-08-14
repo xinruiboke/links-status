@@ -15,8 +15,6 @@ jobs:
     steps:
     - name: 检出代码
       uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
       
     - name: 设置Node.js
       uses: actions/setup-node@v4
@@ -29,10 +27,10 @@ jobs:
     - name: 检测链接状态
       run: npm run check
       
-    - name: 提交更新
+    - name: 提交检测结果
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add output/
         git diff --quiet && git diff --staged --quiet || git commit -m "更新链接状态检测结果 - $(date -u +'%Y-%m-%d %H:%M:%S') UTC"
-        git push origin HEAD:${{ github.ref }} 
+        git push 
