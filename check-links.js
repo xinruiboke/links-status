@@ -24,6 +24,7 @@ const SOURCE_HEADERS = {
 
 const SOURCE_URL = 'https://www.xrbk.cn/api/links.json';
 const OUTPUT_DIR = './output';
+const ERROR_COUNT_FILE = path.join(OUTPUT_DIR, 'error-count.json');
 
 // 辅助函数：格式化为上海时间
 function formatShanghaiTime(date) {
@@ -38,6 +39,58 @@ function formatShanghaiTime(date) {
   const seconds = String(shanghaiDate.getSeconds()).padStart(2, '0');
   
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+// 读取异常次数记录
+async function loadErrorCount() {
+  try {
+    const data = await fs.readFile(ERROR_COUNT_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    // 如果文件不存在或读取失败，返回空对象
+    return {};
+  }
+}
+
+// 保存异常次数记录
+async function saveErrorCount(errorCount) {
+  try {
+    await ensureOutputDir();
+    await fs.writeFile(ERROR_COUNT_FILE, JSON.stringify(errorCount, null, 2), 'utf8');
+  } catch (error) {
+    console.error('保存异常次数记录失败:', error);
+  }
+}
+
+// 更新域名的异常次数
+async function updateErrorCount(domain, isError) {
+  const errorCount = await loadErrorCount();
+  
+  if (isError) {
+    // 如果是异常，增加计数
+    errorCount[domain] = (errorCount[domain] || 0) + 1;
+    console.log(`⚠️  ${domain}: 异常次数增加到 ${errorCount[domain]}`);
+  } else {
+    // 如果正常，重置计数
+    if (errorCount[domain] && errorCount[domain] > 0) {
+      console.log(`✅ ${domain}: 恢复正常，异常次数已重置 (之前: ${errorCount[domain]})`);
+    }
+    errorCount[domain] = 0;
+  }
+  
+  await saveErrorCount(errorCount);
+  return errorCount[domain] || 0;
+}
+
+// 从URL中提取域名
+function extractDomain(url) {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname;
+  } catch (error) {
+    // 如果URL格式不正确，返回原始URL
+    return url;
+  }
 }
 
 async function fetchSourceLinks() {
@@ -74,8 +127,14 @@ async function checkLinkDirectly(url, name) {
     const success = response.status === 200;
     if (success) {
       console.log(`✅ ${name}: 直接检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
+      // 检测成功，重置异常次数
+      const domain = extractDomain(url);
+      await updateErrorCount(domain, false);
     } else {
       console.log(`❌ ${name}: 直接检测失败 (状态码: ${response.status})`);
+      // 检测失败，增加异常次数
+      const domain = extractDomain(url);
+      await updateErrorCount(domain, true);
     }
     
     return {
@@ -85,6 +144,10 @@ async function checkLinkDirectly(url, name) {
     };
   } catch (error) {
     console.error(`❌ ${name}: 直接检测异常 - ${error.message}`);
+    // 检测异常，增加异常次数
+    const domain = extractDomain(url);
+    await updateErrorCount(domain, true);
+    
     return {
       success: false,
       latency: -1,
@@ -151,8 +214,14 @@ async function checkWithAPI(items) {
 
         if (success) {
           console.log(`✅ ${item.name}: API检测成功 (状态码: ${statusCode}, 延迟: ${data.latency || 0}s)`);
+          // API检测成功，重置异常次数
+          const domain = extractDomain(url);
+          await updateErrorCount(domain, false);
         } else {
           console.log(`⚠️  ${item.name}: API检测失败 (状态码: ${statusCode}), 将进行直接检测`);
+          // API检测失败，增加异常次数
+          const domain = extractDomain(url);
+          await updateErrorCount(domain, true);
         }
 
         return {
@@ -163,6 +232,10 @@ async function checkWithAPI(items) {
         };
       } else {
         console.log(`❌ ${item.name}: API请求失败 (HTTP ${response.status})`);
+        // API请求失败，增加异常次数
+        const domain = extractDomain(url);
+        await updateErrorCount(domain, true);
+        
         xiaoxiaoStatus[url] = {
           success: false,
           status: 0,
@@ -180,6 +253,10 @@ async function checkWithAPI(items) {
       }
     } catch (error) {
       console.error(`❌ ${item.name}: API检测异常 - ${error.message}`);
+      // API检测异常，增加异常次数
+      const domain = extractDomain(url);
+      await updateErrorCount(domain, true);
+      
       xiaoxiaoStatus[url] = {
         success: false,
         status: 0,
@@ -367,6 +444,7 @@ async function saveResults() {
     console.log('   - status.json (主要检测结果)');
     console.log('   - status-cf.json (直接检测状态)');
     console.log('   - status-xiaoxiao.json (API检测状态)');
+    console.log('   - error-count.json (异常次数记录)');
     console.log('   - index.html (可视化展示页面)');
     
   } catch (error) {
