@@ -37,4 +37,11 @@ jobs:
         echo "=== status-cf.json ==="
         head -10 output/status-cf.json
         echo "=== status-xiaoxiao.json ==="
-        head -10 output/status-xiaoxiao.json 
+        head -10 output/status-xiaoxiao.json
+        
+    - name: 上传检测结果
+      uses: actions/upload-artifact@v4
+      with:
+        name: link-status-results
+        path: output/
+        retention-days: 30 
