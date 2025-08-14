@@ -1,14 +1,14 @@
 {
-  "timestamp": "2025-08-14 14:21:11",
-  "accessible_count": 19,
-  "inaccessible_count": 1,
+  "timestamp": "2025-08-14 14:41:06",
+  "accessible_count": 17,
+  "inaccessible_count": 3,
   "total_count": 20,
   "link_status": [
     {
       "name": "阿蛮君博客",
       "link": "https://www.amjun.com",
       "favicon": "http://www.amjun.com/wp-content/uploads/2023/07/Snipaste_2023-07-25_15-49-45111.png",
-      "latency": 0,
+      "latency": 1.03,
       "success": true
     },
     {
@@ -57,7 +57,7 @@
       "name": "OKang",
       "link": "https://okang.top/",
       "favicon": "https://www.okang.top/wp-content/uploads/2025/04/logo-300x300.jpg",
-      "latency": 0,
+      "latency": 2.83,
       "success": true
     },
     {
@@ -78,15 +78,15 @@
       "name": "广然笔记",
       "link": "https://www.grbj.cn",
       "favicon": "https://www.grbj.cn/favicon.ico",
-      "latency": 0.49,
+      "latency": 0.83,
       "success": true
     },
     {
       "name": "淇云博客",
       "link": "https://www.pengqi.club",
       "favicon": "https://tc.pengqi.club/img/2023/01/17/CcxI.png",
-      "latency": 0,
-      "success": true
+      "latency": -1,
+      "success": false
     },
     {
       "name": "码上星辰的技术札记",
@@ -106,8 +106,8 @@
       "name": "欣文网",
       "link": "https://www.xinenw.com/",
       "favicon": "https://img.xinenw.com/uploads/2024/03/2024031513302828.jpeg",
-      "latency": 0,
-      "success": true
+      "latency": -1,
+      "success": false
     },
     {
       "name": "牛魔博客",
@@ -141,7 +141,7 @@
       "name": "青序栈",
       "link": "https://qxzhan.cn/",
       "favicon": "https://qxzhan.cn/favicon.png",
-      "latency": 0,
+      "latency": 2.42,
       "success": true
     }
   ]

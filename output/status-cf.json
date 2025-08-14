@@ -1,14 +1,45 @@
 {
+  "https://www.pengqi.club": {
+    "success": false,
+    "status": 403,
+    "latency": -1,
+    "timestamp": "2025-08-14 14:40:34"
+  },
   "https://www.grbj.cn": {
     "success": true,
     "status": 200,
-    "latency": 0.49,
-    "timestamp": "2025-08-14 14:20:39"
+    "latency": 0.83,
+    "timestamp": "2025-08-14 14:40:34"
+  },
+  "https://www.amjun.com": {
+    "success": true,
+    "status": 200,
+    "latency": 1.03,
+    "timestamp": "2025-08-14 14:40:34"
+  },
+  "https://www.xinenw.com/": {
+    "success": false,
+    "status": 0,
+    "latency": -1,
+    "error": "request to https://www.xinenw.com/ failed, reason: socket hang up",
+    "timestamp": "2025-08-14 14:40:35"
+  },
+  "https://qxzhan.cn/": {
+    "success": true,
+    "status": 200,
+    "latency": 2.42,
+    "timestamp": "2025-08-14 14:40:36"
+  },
+  "https://okang.top/": {
+    "success": true,
+    "status": 200,
+    "latency": 2.83,
+    "timestamp": "2025-08-14 14:40:36"
   },
   "https://www.nmwbk.com": {
     "success": false,
-    "status": 554,
+    "status": 524,
     "latency": -1,
-    "timestamp": "2025-08-14 14:21:11"
+    "timestamp": "2025-08-14 14:41:06"
   }
 }

@@ -1,142 +1,147 @@
 {
-  "https://www.amjun.com": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:19"
-  },
   "https://www.x8xx.cn": {
     "success": true,
     "status": 200,
     "apiStatus": 200,
     "latency": 0,
-    "timestamp": "2025-08-14 14:20:19"
+    "timestamp": "2025-08-14 14:39:35"
   },
   "https://www.90svip.cn/": {
     "success": true,
     "status": 200,
     "apiStatus": 200,
     "latency": 0,
-    "timestamp": "2025-08-14 14:20:20"
-  },
-  "https://blog.lichenghao.cn": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:20"
-  },
-  "https://www.angel-pe.cn": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:20"
-  },
-  "https://okang.top/": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:21"
-  },
-  "https://www.kl66.com": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:21"
-  },
-  "https://rjasj.com": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:21"
-  },
-  "https://www.cnup.top": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:21"
+    "timestamp": "2025-08-14 14:39:35"
   },
   "https://www.xhily.com": {
     "success": true,
     "status": 200,
     "apiStatus": 200,
     "latency": 0,
-    "timestamp": "2025-08-14 14:20:22"
+    "timestamp": "2025-08-14 14:39:35"
+  },
+  "https://www.cnup.top": {
+    "success": true,
+    "status": 200,
+    "apiStatus": 200,
+    "latency": 0,
+    "timestamp": "2025-08-14 14:39:35"
+  },
+  "https://rjasj.com": {
+    "success": true,
+    "status": 200,
+    "apiStatus": 200,
+    "latency": 0,
+    "timestamp": "2025-08-14 14:39:35"
+  },
+  "https://www.kl66.com": {
+    "success": true,
+    "status": 200,
+    "apiStatus": 200,
+    "latency": 0,
+    "timestamp": "2025-08-14 14:39:36"
+  },
+  "https://www.angel-pe.cn": {
+    "success": true,
+    "status": 200,
+    "apiStatus": 200,
+    "latency": 0,
+    "timestamp": "2025-08-14 14:39:36"
+  },
+  "https://blog.lichenghao.cn": {
+    "success": true,
+    "status": 200,
+    "apiStatus": 200,
+    "latency": 0,
+    "timestamp": "2025-08-14 14:39:57"
+  },
+  "https://www.amjun.com": {
+    "success": false,
+    "status": 0,
+    "apiStatus": 0,
+    "latency": -1,
+    "error": "network timeout at: https://v2.xxapi.cn/api/status?url=https%3A%2F%2Fwww.amjun.com",
+    "timestamp": "2025-08-14 14:40:03"
+  },
+  "https://okang.top/": {
+    "success": false,
+    "status": 0,
+    "apiStatus": 0,
+    "latency": -1,
+    "error": "network timeout at: https://v2.xxapi.cn/api/status?url=https%3A%2F%2Fokang.top%2F",
+    "timestamp": "2025-08-14 14:40:03"
   },
   "https://www.grbj.cn": {
     "success": false,
     "status": null,
     "apiStatus": -2,
     "latency": -1,
-    "timestamp": "2025-08-14 14:20:23"
+    "timestamp": "2025-08-14 14:40:05"
   },
   "https://www.xiaozhuhouses.asia": {
     "success": true,
     "status": 200,
     "apiStatus": 200,
     "latency": 0,
-    "timestamp": "2025-08-14 14:20:23"
-  },
-  "https://blog.qjqq.cn/": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:23"
-  },
-  "https://blog.starsharbor.com": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:23"
-  },
-  "https://qxzhan.cn/": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:24"
-  },
-  "https://www.xinenw.com/": {
-    "success": true,
-    "status": 200,
-    "apiStatus": 200,
-    "latency": 0,
-    "timestamp": "2025-08-14 14:20:24"
+    "timestamp": "2025-08-14 14:40:05"
   },
   "https://www.xiangmeng.vip/": {
     "success": true,
     "status": 200,
     "apiStatus": 200,
     "latency": 0,
-    "timestamp": "2025-08-14 14:20:24"
+    "timestamp": "2025-08-14 14:40:05"
   },
-  "https://www.pengqi.club": {
+  "https://blog.qjqq.cn/": {
     "success": true,
     "status": 200,
     "apiStatus": 200,
     "latency": 0,
-    "timestamp": "2025-08-14 14:20:24"
+    "timestamp": "2025-08-14 14:40:05"
   },
   "https://blog.efu.me/": {
     "success": true,
     "status": 200,
     "apiStatus": 200,
     "latency": 0,
-    "timestamp": "2025-08-14 14:20:24"
+    "timestamp": "2025-08-14 14:40:05"
+  },
+  "https://blog.starsharbor.com": {
+    "success": true,
+    "status": 200,
+    "apiStatus": 200,
+    "latency": 0,
+    "timestamp": "2025-08-14 14:40:05"
+  },
+  "https://www.pengqi.club": {
+    "success": false,
+    "status": 525,
+    "apiStatus": 200,
+    "latency": -1,
+    "timestamp": "2025-08-14 14:40:15"
+  },
+  "https://www.xinenw.com/": {
+    "success": false,
+    "status": 0,
+    "apiStatus": 0,
+    "latency": -1,
+    "error": "network timeout at: https://v2.xxapi.cn/api/status?url=https%3A%2F%2Fwww.xinenw.com%2F",
+    "timestamp": "2025-08-14 14:40:33"
   },
   "https://www.nmwbk.com": {
     "success": false,
-    "status": 502,
-    "apiStatus": 200,
+    "status": 0,
+    "apiStatus": 0,
     "latency": -1,
-    "timestamp": "2025-08-14 14:20:39"
+    "error": "network timeout at: https://v2.xxapi.cn/api/status?url=https%3A%2F%2Fwww.nmwbk.com",
+    "timestamp": "2025-08-14 14:40:33"
+  },
+  "https://qxzhan.cn/": {
+    "success": false,
+    "status": 0,
+    "apiStatus": 0,
+    "latency": -1,
+    "error": "network timeout at: https://v2.xxapi.cn/api/status?url=https%3A%2F%2Fqxzhan.cn%2F",
+    "timestamp": "2025-08-14 14:40:33"
   }
 }
