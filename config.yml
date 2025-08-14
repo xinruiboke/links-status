@@ -51,6 +51,8 @@ output:
   generate_html: true
   # 是否保存错误计数
   save_error_count: true
+  # 是否复制静态文件
+  copy_static_files: true
 
 # 时区配置
 timezone:

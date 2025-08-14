@@ -372,8 +372,6 @@ async function ensureOutputDir() {
 
 async function copyStaticFiles() {
   try {
-    console.log('📁 复制静态文件...');
-    
     // 复制index.html
     const sourceHtml = path.join('./output', 'index.html');
     const targetHtml = path.join(CONFIG.output.directory, 'index.html');
@@ -413,16 +411,15 @@ async function saveResults() {
     console.log(`📅 检测时间: ${resultData.timestamp}`);
     
     // 保存主要状态数据
+    console.log('💾 保存检测结果...');
     await fs.writeFile(
       path.join(CONFIG.output.directory, 'status.json'),
       JSON.stringify(resultData, null, 2),
       'utf8'
     );
+    console.log('✅ status.json 已保存');
     
-    // 复制静态文件
-    await copyStaticFiles();
-    
-    console.log('💾 检测完成！结果已保存到page文件夹');
+    // 显示文件生成信息
     console.log('📁 生成的文件:');
     console.log('   - status.json (主要检测结果)');
     if (CONFIG.output.save_error_count) {
@@ -430,6 +427,16 @@ async function saveResults() {
     }
     console.log('   - index.html (可视化展示页面)');
     console.log('   - favicon.png (网站图标)');
+    
+    // 复制静态文件
+    if (CONFIG.output.copy_static_files) {
+      console.log('📁 复制静态文件...');
+      await copyStaticFiles();
+    } else {
+      console.log('⏭️  跳过静态文件复制');
+    }
+    
+    console.log('🎉 检测完成！结果已保存到page文件夹');
     
   } catch (error) {
     console.error('❌ 保存结果时出错:', error);
