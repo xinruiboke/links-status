@@ -39,7 +39,28 @@ jobs:
         echo "=== status-xiaoxiao.json ==="
         head -10 output/status-xiaoxiao.json
         
-    - name: 上传检测结果
+    - name: 配置Git用户
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        
+    - name: 检出结果分支
+      run: |
+        git checkout -b results || git checkout results
+        git pull origin results || echo "分支不存在，将创建新分支"
+        
+    - name: 提交检测结果到分支
+      run: |
+        # 复制检测结果到当前分支
+        cp -r output/* ./
+        # 添加所有文件
+        git add .
+        # 提交更改
+        git commit -m "更新链接检测结果 - $(date '+%Y-%m-%d %H:%M:%S')" || echo "没有新的更改"
+        # 推送到远程分支
+        git push origin results || echo "推送失败，可能是权限问题"
+        
+    - name: 上传检测结果作为Artifact
       uses: actions/upload-artifact@v4
       with:
         name: link-status-results
