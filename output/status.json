@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-08-14 14:10:11",
+  "timestamp": "2025-08-14 14:21:11",
   "accessible_count": 19,
   "inaccessible_count": 1,
   "total_count": 20,
@@ -78,7 +78,7 @@
       "name": "广然笔记",
       "link": "https://www.grbj.cn",
       "favicon": "https://www.grbj.cn/favicon.ico",
-      "latency": 0.37,
+      "latency": 0.49,
       "success": true
     },
     {
