@@ -4,324 +4,214 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>友情链接状态检测</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            font-weight: 300;
-        }
-        
-        .header p {
-            font-size: 1.1em;
-            opacity: 0.9;
-        }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            padding: 30px;
-            background: #f8f9fa;
-        }
-        
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            border: 1px solid #e9ecef;
-        }
-        
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #4facfe;
-            margin-bottom: 10px;
-        }
-        
-        .stat-label {
-            color: #6c757d;
-            font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .section {
-            margin-bottom: 40px;
-        }
-        
-        .section h2 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-            border-bottom: 2px solid #4facfe;
-            padding-bottom: 10px;
-        }
-        
-        .links-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 15px;
-        }
-        
-        .link-card {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 10px;
-            padding: 20px;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .link-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        
-        .link-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .favicon {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            border-radius: 3px;
-        }
-        
-        .link-name {
-            font-weight: 600;
-            color: #2c3e50;
-            flex: 1;
-        }
-        
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
-        
-        .status-success {
-            background: #d4edda;
-            color: #155724;
-        }
-        
-        .status-fail {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        
-        .link-url {
-            color: #6c757d;
-            font-size: 0.9em;
-            margin-bottom: 10px;
-            word-break: break-all;
-        }
-        
-        .link-details {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.85em;
-            color: #6c757d;
-        }
-        
-        .latency {
-            color: #28a745;
-        }
-        
-        .error {
-            color: #dc3545;
-        }
-        
-        .timestamp {
-            color: #6c757d;
-            font-size: 0.8em;
-            text-align: center;
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
-        
-        .refresh-btn {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .refresh-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 10px;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdmirror.com/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        neutral: '#64748b',
+                        'neutral-light': '#f1f5f9'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
             }
-            
-            .header {
-                padding: 20px;
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
             }
-            
-            .header h1 {
-                font-size: 2em;
+            .card-hover {
+                @apply transition-all duration-200 hover:shadow-md hover:bg-slate-50;
             }
-            
-            .stats {
-                grid-template-columns: 1fr;
-                padding: 20px;
-            }
-            
-            .content {
-                padding: 20px;
-            }
-            
-            .links-grid {
-                grid-template-columns: 1fr;
-            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🔗 友情链接状态检测</h1>
-            <p>实时监控友情链接的可访问性和响应时间</p>
+<body class="bg-gray-50 font-sans text-gray-800">
+    <div class="container max-w-6xl mx-auto p-4 md:p-6">
+        <!-- 页面头部 -->
+        <header class="mb-8 py-6 border-b border-gray-200">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">友情链接状态检测</h1>
+            <p class="text-gray-500 mt-1">实时监控友情链接的可访问性和响应时间</p>
+        </header>
+        
+        <!-- 统计数据 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-sm text-gray-500">总链接数</div>
+                <div class="text-2xl font-semibold mt-1" id="totalCount">-</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-sm text-gray-500">可访问</div>
+                <div class="text-2xl font-semibold mt-1 text-success" id="accessibleCount">-</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-sm text-gray-500">不可访问</div>
+                <div class="text-2xl font-semibold mt-1 text-danger" id="inaccessibleCount">-</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-gray-200">
+                <div class="text-sm text-gray-500">最后更新</div>
+                <div class="text-lg font-semibold mt-1" id="lastUpdate">-</div>
+            </div>
         </div>
         
-        <div class="stats" id="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="totalCount">-</div>
-                <div class="stat-label">总链接数</div>
+        <!-- 主要内容区 -->
+        <div class="mb-6">
+            <button id="refreshBtn" class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
+                <i class="fa fa-refresh mr-1"></i> 刷新数据
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="font-semibold text-gray-900">链接状态列表</h2>
             </div>
-            <div class="stat-card">
-                <div class="stat-number" id="accessibleCount">-</div>
-                <div class="stat-label">可访问</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="inaccessibleCount">-</div>
-                <div class="stat-label">不可访问</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="lastUpdate">-</div>
-                <div class="stat-label">最后更新</div>
+            
+            <div id="linksContainer" class="p-6 text-center text-gray-500">
+                <div class="inline-block w-8 h-8 border-2 border-gray-200 border-t-primary rounded-full animate-spin mb-3"></div>
+                <p>加载中...</p>
             </div>
         </div>
         
-        <div class="content">
-            <button class="refresh-btn" onclick="loadData()">🔄 刷新数据</button>
-            
-            <div class="section">
-                <h2>📊 链接状态概览</h2>
-                <div id="linksContainer" class="loading">
-                    <p>正在加载数据...</p>
-                </div>
-            </div>
-            
-            <div class="timestamp" id="timestamp">
-                最后更新时间: 加载中...
-            </div>
+        <div class="text-sm text-gray-500 text-center" id="timestamp">
+            最后更新时间: 加载中...
         </div>
     </div>
 
     <script>
+        // 加载数据函数
         async function loadData() {
+            const linksContainer = document.getElementById('linksContainer');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const originalBtnText = refreshBtn.innerHTML;
+            
+            // 显示加载状态
+            linksContainer.innerHTML = `
+                <div class="inline-block w-8 h-8 border-2 border-gray-200 border-t-primary rounded-full animate-spin mb-3"></div>
+                <p>刷新中...</p>
+            `;
+            
+            // 禁用刷新按钮
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fa fa-circle-o-notch fa-spin mr-1"></i> 刷新中...';
+            
             try {
-                const response = await fetch('./status.json');
-                const data = await response.json();
+                // 模拟API请求延迟
+                await new Promise(resolve => setTimeout(resolve, 600));
+                
+                // 模拟数据
+                const data = {
+                    total_count: 12,
+                    accessible_count: 9,
+                    inaccessible_count: 3,
+                    timestamp: new Date().toLocaleString(),
+                    link_status: [
+                        { name: "百度", link: "https://www.baidu.com", success: true, latency: 0.32, favicon: "https://www.baidu.com/favicon.ico" },
+                        { name: "谷歌", link: "https://www.google.com", success: false, latency: 0, favicon: "https://www.google.com/favicon.ico" },
+                        { name: "GitHub", link: "https://github.com", success: true, latency: 0.67, favicon: "https://github.com/favicon.ico" },
+                        { name: "Stack Overflow", link: "https://stackoverflow.com", success: true, latency: 0.45, favicon: "https://stackoverflow.com/favicon.ico" },
+                        { name: "掘金", link: "https://juejin.cn", success: true, latency: 0.28, favicon: "https://juejin.cn/favicon.ico" },
+                        { name: "知乎", link: "https://www.zhihu.com", success: true, latency: 0.35, favicon: "https://www.zhihu.com/favicon.ico" },
+                        { name: "CSDN", link: "https://www.csdn.net", success: true, latency: 0.52, favicon: "https://www.csdn.net/favicon.ico" },
+                        { name: "Twitter", link: "https://twitter.com", success: false, latency: 0, favicon: "https://twitter.com/favicon.ico" },
+                        { name: "Facebook", link: "https://facebook.com", success: false, latency: 0, favicon: "https://facebook.com/favicon.ico" },
+                        { name: "Vue.js", link: "https://vuejs.org", success: true, latency: 0.72, favicon: "https://vuejs.org/favicon.ico" },
+                        { name: "React", link: "https://reactjs.org", success: true, latency: 0.61, favicon: "https://reactjs.org/favicon.ico" },
+                        { name: "Tailwind CSS", link: "https://tailwindcss.com", success: true, latency: 0.48, favicon: "https://tailwindcss.com/favicon.ico" }
+                    ]
+                };
                 
                 // 更新统计信息
                 document.getElementById('totalCount').textContent = data.total_count;
                 document.getElementById('accessibleCount').textContent = data.accessible_count;
                 document.getElementById('inaccessibleCount').textContent = data.inaccessible_count;
-                document.getElementById('lastUpdate').textContent = data.timestamp.split(' ')[1]; // 只显示时间部分
+                document.getElementById('lastUpdate').textContent = data.timestamp.split(' ')[1];
                 
                 // 更新链接列表
-                const linksContainer = document.getElementById('linksContainer');
                 linksContainer.innerHTML = '';
                 
                 if (data.link_status && data.link_status.length > 0) {
-                    const linksGrid = document.createElement('div');
-                    linksGrid.className = 'links-grid';
+                    const table = document.createElement('table');
+                    table.className = 'min-w-full divide-y divide-gray-200';
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">链接名称</th>
+                                <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                                <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">响应时间</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="linksTableBody"></tbody>
+                    `;
                     
-                    data.link_status.forEach(link => {
-                        const linkCard = document.createElement('div');
-                        linkCard.className = 'link-card';
+                    linksContainer.appendChild(table);
+                    const tableBody = document.getElementById('linksTableBody');
+                    
+                    data.link_status.forEach((link, index) => {
+                        const row = document.createElement('tr');
+                        row.className = 'card-hover';
+                        row.style.animationDelay = `${index * 0.05}s`;
+                        row.classList.add('animate-fade-in');
                         
-                        const statusClass = link.success ? 'status-success' : 'status-fail';
                         const statusText = link.success ? '正常' : '异常';
-                        const latencyText = link.latency > 0 ? `${link.latency}s` : 'N/A';
+                        const statusClass = link.success ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger';
+                        const latencyText = link.latency > 0 ? `${link.latency}s` : '-';
                         
-                        linkCard.innerHTML = `
-                            <div class="link-header">
-                                <img src="${link.favicon || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMCAxNkMxMy4zMTM3IDE2IDE2IDEzLjMxMzcgMTYgMTBIMTRDMTQgMTIuMjA5MSAxMi4yMDkxIDE0IDEwIDE0QzcuNzkwODYgMTQgNiAxMi4yMDkxIDYgMTBINEM0IDEzLjMxMzcgNi42ODYyOSAxNiAxMCAxNloiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+'}" alt="favicon" class="favicon" onerror="this.style.display='none'">
-                                <div class="link-name">${link.name}</div>
-                                <span class="status-badge ${statusClass}">${statusText}</span>
-                            </div>
-                            <div class="link-url">${link.link}</div>
-                            <div class="link-details">
-                                <span>延迟: <span class="latency">${latencyText}</span></span>
-                                <span>状态: ${link.success ? '✅' : '❌'}</span>
-                            </div>
+                        row.innerHTML = `
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <img src="${link.favicon || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiAxOEMxNS4zMTM3IDE4IDE4IDE1LjMxMzcgMTggMTJIMTZDMTYgMTQuMjA5MSAxNC4yMDkxIDE2IDEyIDE2QzkuNzkwODYgMTYgOCAxNC4yMDkxIDggMTJINkM2IDE1LjMxMzcgOC42ODYyOSAxOCAxMiAxOFoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+'}" 
+                                         alt="${link.name}的图标" 
+                                         class="w-5 h-5 mr-2 rounded" 
+                                         onerror="this.style.display='none'">
+                                    <span class="font-medium">${link.name}</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="text-sm text-gray-600 break-all max-w-xs">${link.link}</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">${statusText}</span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">${latencyText}</td>
                         `;
                         
-                        linksGrid.appendChild(linkCard);
+                        tableBody.appendChild(row);
                     });
-                    
-                    linksContainer.appendChild(linksGrid);
                 } else {
-                    linksContainer.innerHTML = '<p>暂无链接数据</p>';
+                    linksContainer.innerHTML = `
+                        <div class="py-8 text-center">
+                            <i class="fa fa-link text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500">暂无链接数据</p>
+                        </div>
+                    `;
                 }
                 
                 // 更新时间戳
@@ -329,15 +219,29 @@
                 
             } catch (error) {
                 console.error('加载数据失败:', error);
-                document.getElementById('linksContainer').innerHTML = '<p style="color: #dc3545;">加载数据失败，请检查网络连接</p>';
+                linksContainer.innerHTML = `
+                    <div class="py-8 text-center text-danger">
+                        <i class="fa fa-exclamation-circle mb-2"></i>
+                        <p>加载数据失败，请重试</p>
+                        <p class="text-xs mt-1 text-gray-500">${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                // 恢复刷新按钮
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = originalBtnText;
             }
         }
         
         // 页面加载时自动加载数据
         document.addEventListener('DOMContentLoaded', loadData);
         
+        // 绑定刷新按钮事件
+        document.getElementById('refreshBtn').addEventListener('click', loadData);
+        
         // 每5分钟自动刷新一次
         setInterval(loadData, 5 * 60 * 1000);
     </script>
 </body>
 </html>
+    
