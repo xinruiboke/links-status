@@ -374,15 +374,27 @@ async function checkAllLinks() {
       }
     });
 
+    // 获取异常次数记录并添加到结果中
+    const errorCount = await loadErrorCount();
+    const finalResultsWithErrorCount = finalResults.map(item => {
+      const domain = extractDomain(item.link);
+      const errorCountForDomain = errorCount[domain] || 0;
+      
+      return {
+        ...item,
+        error_count: errorCountForDomain
+      };
+    });
+
     const now = new Date();
 
-    const accessible = finalResults.filter(r => r.success).length;
+    const accessible = finalResultsWithErrorCount.filter(r => r.success).length;
     const resultData = {
       timestamp: formatShanghaiTime(now),
       accessible_count: accessible,
-      inaccessible_count: finalResults.length - accessible,
-      total_count: finalResults.length,
-      link_status: finalResults
+      inaccessible_count: finalResultsWithErrorCount.length - accessible,
+      total_count: finalResultsWithErrorCount.length,
+      link_status: finalResultsWithErrorCount
     };
     
     console.log('📝 整理检测结果...');
