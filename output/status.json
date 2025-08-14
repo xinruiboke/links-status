@@ -1,148 +1,168 @@
 {
-  "timestamp": "2025-08-14 14:41:06",
-  "accessible_count": 17,
-  "inaccessible_count": 3,
+  "timestamp": "2025-08-14 14:46:37",
+  "accessible_count": 19,
+  "inaccessible_count": 1,
   "total_count": 20,
   "link_status": [
     {
       "name": "阿蛮君博客",
       "link": "https://www.amjun.com",
       "favicon": "http://www.amjun.com/wp-content/uploads/2023/07/Snipaste_2023-07-25_15-49-45111.png",
-      "latency": 1.03,
-      "success": true
+      "latency": 0,
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "lzz0403的技术博客",
       "link": "https://www.cnup.top",
       "favicon": "https://www.cnup.top/favicon.ico",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "软技收集",
       "link": "https://rjasj.com",
       "favicon": "https://rjasj.com/favicon.png",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "树洞笔记",
       "link": "https://www.x8xx.cn",
       "favicon": "https://www.x8xx.cn/favicon.ico",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "无用笔记",
       "link": "https://www.xhily.com",
       "favicon": "https://www.xhily.com/favicon.ico",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "极客指北",
       "link": "https://www.90svip.cn/",
       "favicon": "https://www.90svip.cn/logo.png",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "康灵博客园",
       "link": "https://www.kl66.com",
       "favicon": "https://www.kl66.com/tu/logo.png",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "OKang",
       "link": "https://okang.top/",
       "favicon": "https://www.okang.top/wp-content/uploads/2025/04/logo-300x300.jpg",
-      "latency": 2.83,
-      "success": true
+      "latency": 0,
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "故事的程序猿",
       "link": "https://blog.lichenghao.cn",
       "favicon": "https://blog.lichenghao.cn/avatar.svg",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "Angel_天使PE",
       "link": "https://www.angel-pe.cn",
       "favicon": "https://www.angel-pe.cn/favicon.ico",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "广然笔记",
       "link": "https://www.grbj.cn",
       "favicon": "https://www.grbj.cn/favicon.ico",
-      "latency": 0.83,
-      "success": true
+      "latency": 0.53,
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "淇云博客",
       "link": "https://www.pengqi.club",
       "favicon": "https://tc.pengqi.club/img/2023/01/17/CcxI.png",
-      "latency": -1,
-      "success": false
+      "latency": 0,
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "码上星辰的技术札记",
       "link": "https://www.xiaozhuhouses.asia",
       "favicon": "https://www.xiaozhuhouses.asia/upload/114d9bc9c69f1589bd07f9f507705900275878794.png@1192w.jpg",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "翔梦魔方",
       "link": "https://www.xiangmeng.vip/",
       "favicon": "https://www.xiangmeng.vip/favicon.ico",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "欣文网",
       "link": "https://www.xinenw.com/",
       "favicon": "https://img.xinenw.com/uploads/2024/03/2024031513302828.jpeg",
-      "latency": -1,
-      "success": false
+      "latency": 0,
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "牛魔博客",
       "link": "https://www.nmwbk.com",
       "favicon": "https://oss.nmwbk.com/wp-content/uploads/2023/05/20230511083703532.ico",
       "latency": -1,
-      "success": false
+      "success": false,
+      "error_count": 3
     },
     {
       "name": "伍柒柒",
       "link": "https://blog.efu.me/",
       "favicon": "https://cdn.lightxi.com/cloudreve/uploads/2025/08/01/tT8ILteu_logo.avif",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "❖星港◎Star☆",
       "link": "https://blog.starsharbor.com",
       "favicon": "https://bu.dusays.com/2025/04/11/67f92f6fcfb26.webp",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "青桔气球",
       "link": "https://blog.qjqq.cn/",
       "favicon": "https://q2.qlogo.cn/headimg_dl?dst_uin=1645253&spec=640",
       "latency": 0,
-      "success": true
+      "success": true,
+      "error_count": 0
     },
     {
       "name": "青序栈",
       "link": "https://qxzhan.cn/",
       "favicon": "https://qxzhan.cn/favicon.png",
-      "latency": 2.42,
-      "success": true
+      "latency": 0,
+      "success": true,
+      "error_count": 0
     }
   ]
 }
