@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import fs from 'fs/promises';
 import path from 'path';
 import yaml from 'js-yaml';
+import { generateHTML } from './generate-html.js';
 
 // 加载配置文件
 async function loadConfig() {
@@ -370,24 +371,45 @@ async function ensureOutputDir() {
   }
 }
 
-async function copyStaticFiles() {
+async function generateStaticFiles() {
   try {
-    // 复制index.html
-    const sourceHtml = path.join('./output', 'index.html');
-    const targetHtml = path.join(CONFIG.output.directory, 'index.html');
-    await fs.copyFile(sourceHtml, targetHtml);
-    console.log('✅ index.html 已复制');
+    // 生成index.html
+    const htmlContent = generateHTML();
+    await fs.writeFile(
+      path.join(CONFIG.output.directory, 'index.html'),
+      htmlContent,
+      'utf8'
+    );
+    console.log('✅ index.html 已生成');
     
-    // 复制favicon.png
-    const sourceFavicon = path.join('./output', 'favicon.png');
-    const targetFavicon = path.join(CONFIG.output.directory, 'favicon.png');
-    await fs.copyFile(sourceFavicon, targetFavicon);
+    // 复制favicon.png（这个文件比较小，复制很快）
+    await fs.copyFile(
+      path.join('./output', 'favicon.png'),
+      path.join(CONFIG.output.directory, 'favicon.png')
+    );
     console.log('✅ favicon.png 已复制');
     
   } catch (error) {
-    console.error('❌ 复制静态文件失败:', error.message);
+    console.error('❌ 生成静态文件失败:', error.message);
     // 不退出程序，因为静态文件不是必需的
   }
+}
+
+// 更快的文件复制方法（使用流）
+async function copyFileFast(source, target) {
+  const fs = await import('fs');
+  const { createReadStream, createWriteStream } = fs;
+  
+  return new Promise((resolve, reject) => {
+    const readStream = createReadStream(source);
+    const writeStream = createWriteStream(target);
+    
+    readStream.pipe(writeStream);
+    
+    writeStream.on('finish', resolve);
+    writeStream.on('error', reject);
+    readStream.on('error', reject);
+  });
 }
 
 async function saveResults() {
@@ -428,12 +450,12 @@ async function saveResults() {
     console.log('   - index.html (可视化展示页面)');
     console.log('   - favicon.png (网站图标)');
     
-    // 复制静态文件
-    if (CONFIG.output.copy_static_files) {
-      console.log('📁 复制静态文件...');
-      await copyStaticFiles();
+    // 生成静态文件
+    if (CONFIG.output.generate_static_files) {
+      console.log('📁 生成静态文件...');
+      await generateStaticFiles();
     } else {
-      console.log('⏭️  跳过静态文件复制');
+      console.log('⏭️  跳过静态文件生成');
     }
     
     console.log('🎉 检测完成！结果已保存到page文件夹');
