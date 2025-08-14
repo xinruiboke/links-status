@@ -1,35 +1,26 @@
 import fetch from 'node-fetch';
 import fs from 'fs/promises';
 import path from 'path';
+import yaml from 'js-yaml';
 
-const HEADERS = {
-  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 (check-flink/1.0; +https://link.ityr.xyz/bot)",
-  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-  "Accept-Language": "zh-CN,zh;q=0.9",
-  "Accept-Encoding": "gzip, deflate, br",
-  "Connection": "keep-alive",
-  "X-Check-Flink": "1.0"
-};
+// 加载配置文件
+async function loadConfig() {
+  try {
+    const configFile = await fs.readFile('config.yml', 'utf8');
+    return yaml.load(configFile);
+  } catch (error) {
+    console.error('❌ 读取配置文件失败:', error.message);
+    process.exit(1);
+  }
+}
 
-const SOURCE_HEADERS = {
-  "Accept": "application/json",
-  "Referer": "https://link.ityr.xyz/",
-  "Origin": "https://link.ityr.xyz",
-  "Accept-Language": "zh-CN,zh;q=0.9",
-  "sec-ch-ua": "\"Chromium\";v=\"122\", \"Not(A:Brand\";v=\"24\", \"Google Chrome\";v=\"122\"",
-  "sec-ch-ua-mobile": "?0",
-  "sec-ch-ua-platform": "\"Windows\"",
-  "X-Check-Flink": "1.0"
-};
-
-const SOURCE_URL = 'https://www.xrbk.cn/api/links.json';
-const OUTPUT_DIR = './output';
-const ERROR_COUNT_FILE = path.join(OUTPUT_DIR, 'error-count.json');
+// 全局配置变量
+let CONFIG = null;
 
 // 辅助函数：格式化为上海时间
 function formatShanghaiTime(date) {
   const shanghaiDate = new Date(date);
-  shanghaiDate.setHours(shanghaiDate.getHours() + 8);
+  shanghaiDate.setHours(shanghaiDate.getHours() + CONFIG.timezone.offset);
   
   const year = shanghaiDate.getFullYear();
   const month = String(shanghaiDate.getMonth() + 1).padStart(2, '0');
@@ -44,7 +35,8 @@ function formatShanghaiTime(date) {
 // 读取异常次数记录
 async function loadErrorCount() {
   try {
-    const data = await fs.readFile(ERROR_COUNT_FILE, 'utf8');
+    const errorCountFile = path.join(CONFIG.output.directory, 'error-count.json');
+    const data = await fs.readFile(errorCountFile, 'utf8');
     return JSON.parse(data);
   } catch (error) {
     // 如果文件不存在或读取失败，返回空对象
@@ -56,7 +48,8 @@ async function loadErrorCount() {
 async function saveErrorCount(errorCount) {
   try {
     await ensureOutputDir();
-    await fs.writeFile(ERROR_COUNT_FILE, JSON.stringify(errorCount, null, 2), 'utf8');
+    const errorCountFile = path.join(CONFIG.output.directory, 'error-count.json');
+    await fs.writeFile(errorCountFile, JSON.stringify(errorCount, null, 2), 'utf8');
   } catch (error) {
     console.error('保存异常次数记录失败:', error);
   }
@@ -82,9 +75,6 @@ async function updateErrorCount(domain, isError) {
   return errorCount[domain] || 0;
 }
 
-// 临时存储检测状态，用于最终判断
-const tempCheckResults = new Map();
-
 // 从URL中提取域名
 function extractDomain(url) {
   try {
@@ -98,9 +88,9 @@ function extractDomain(url) {
 
 async function fetchSourceLinks() {
   try {
-    console.log(`📡 从 ${SOURCE_URL} 获取友情链接数据...`);
-    const response = await fetch(SOURCE_URL, {
-      headers: SOURCE_HEADERS,
+    console.log(`📡 从 ${CONFIG.source.url} 获取友情链接数据...`);
+    const response = await fetch(CONFIG.source.url, {
+      headers: CONFIG.source.headers,
       redirect: 'follow'
     });
     
@@ -117,21 +107,23 @@ async function fetchSourceLinks() {
   }
 }
 
-async function checkLinkDirectly(url, name) {
+async function checkLink(url, name) {
   try {
-    console.log(`🔍 直接检测 ${name} (${url})...`);
+    console.log(`🔍 检测 ${name} (${url})...`);
     const startTime = Date.now();
     const response = await fetch(url, {
-      headers: HEADERS,
-      redirect: 'follow'
+      headers: CONFIG.request_headers,
+      redirect: 'follow',
+      timeout: CONFIG.detection.timeout
     });
     const latency = Math.round((Date.now() - startTime) / 10) / 100;
     
-    const success = response.status === 200;
+    const success = response.status >= CONFIG.detection.success_status_min && 
+                   response.status <= CONFIG.detection.success_status_max;
     if (success) {
-      console.log(`✅ ${name}: 直接检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
+      console.log(`✅ ${name}: 检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
     } else {
-      console.log(`❌ ${name}: 直接检测失败 (状态码: ${response.status})`);
+      console.log(`❌ ${name}: 检测失败 (状态码: ${response.status})`);
     }
     
     return {
@@ -140,7 +132,7 @@ async function checkLinkDirectly(url, name) {
       status: response.status
     };
   } catch (error) {
-    console.error(`❌ ${name}: 直接检测异常 - ${error.message}`);
+    console.error(`❌ ${name}: 检测异常 - ${error.message}`);
     
     return {
       success: false,
@@ -152,115 +144,17 @@ async function checkLinkDirectly(url, name) {
 }
 
 // 添加并发控制函数
-async function batchProcess(items, batchSize, processor) {
+async function batchProcess(items, processor) {
   const results = [];
-  for (let i = 0; i < items.length; i += batchSize) {
-    const batch = items.slice(i, i + batchSize);
+  for (let i = 0; i < items.length; i += CONFIG.detection.batch_size) {
+    const batch = items.slice(i, i + CONFIG.detection.batch_size);
     const batchResults = await Promise.all(batch.map(processor));
     results.push(...batchResults);
-    if (i + batchSize < items.length) {
-      await new Promise(resolve => setTimeout(resolve, 200)); // 批次间延迟
+    if (i + CONFIG.detection.batch_size < items.length) {
+      await new Promise(resolve => setTimeout(resolve, CONFIG.detection.batch_delay));
     }
   }
   return results;
-}
-
-async function checkWithAPI(items) {
-  const results = [];
-  const xiaoxiaoStatus = {};
-  
-  const batchSize = 10;
-  const processItem = async (item) => {
-    const url = item.link;
-    if (!url) {
-      console.log(`❌ ${item.name}: 链接为空`);
-      return {
-        ...item,
-        success: false,
-        latency: -1,
-        needDirectCheck: true
-      };
-    }
-
-    try {
-      console.log(`🔍 检测 ${item.name} (${url}) - 使用小小API...`);
-      const apiUrl = `https://v2.xxapi.cn/api/status?url=${encodeURIComponent(url)}`;
-      const response = await fetch(apiUrl, {
-        headers: SOURCE_HEADERS,
-        timeout: 30000
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const statusCode = parseInt(data.data);
-        const success = parseInt(data.code) === 200 && (statusCode >= 200 && statusCode < 400);
-        
-        xiaoxiaoStatus[url] = {
-          success,
-          status: statusCode,
-          apiStatus: parseInt(data.code),
-          latency: success ? (data.latency || 0) : -1,
-          timestamp: formatShanghaiTime(new Date())
-        };
-
-        // 如果API返回的状态码不是2xx或3xx，需要直接检查
-        const needDirectCheck = !success;
-
-        if (success) {
-          console.log(`✅ ${item.name}: API检测成功 (状态码: ${statusCode}, 延迟: ${data.latency || 0}s)`);
-        } else {
-          console.log(`⚠️  ${item.name}: API检测失败 (状态码: ${statusCode}), 将进行直接检测`);
-        }
-
-        return {
-          ...item,
-          success,
-          latency: success ? (data.latency || 0) : -1,
-          needDirectCheck
-        };
-      } else {
-        console.log(`❌ ${item.name}: API请求失败 (HTTP ${response.status})`);
-        
-        xiaoxiaoStatus[url] = {
-          success: false,
-          status: 0,
-          apiStatus: response.status,
-          latency: -1,
-          timestamp: formatShanghaiTime(new Date())
-        };
-        
-        return {
-          ...item,
-          success: false,
-          latency: -1,
-          needDirectCheck: true
-        };
-      }
-    } catch (error) {
-      console.error(`❌ ${item.name}: API检测异常 - ${error.message}`);
-      
-      xiaoxiaoStatus[url] = {
-        success: false,
-        status: 0,
-        apiStatus: 0,
-        latency: -1,
-        error: error.message,
-        timestamp: formatShanghaiTime(new Date())
-      };
-      
-      return {
-        ...item,
-        success: false,
-        latency: -1,
-        needDirectCheck: true
-      };
-    }
-  };
-
-  const processedResults = await batchProcess(items, batchSize, processItem);
-  results.push(...processedResults);
-  
-  return { results, xiaoxiaoStatus };
 }
 
 async function checkAllLinks() {
@@ -281,86 +175,30 @@ async function checkAllLinks() {
     }));
     
     console.log(`📋 获取到 ${linksToCheck.length} 个友情链接`);
-    console.log('🔍 开始API检测...');
+    console.log('🔍 开始直接检测所有链接...');
 
-    const cfStatus = {};
-    
-    // 先用小小API检查所有链接
-    const { results: apiResults, xiaoxiaoStatus } = await checkWithAPI(linksToCheck);
-    
-    // 找出需要直接检查的链接
-    const needDirectCheck = apiResults.filter(item => item.needDirectCheck);
-    
-    if (needDirectCheck.length > 0) {
-      console.log(`🔍 开始直接检测 ${needDirectCheck.length} 个链接...`);
-    } else {
-      console.log('✅ 所有链接API检测完成，无需直接检测');
-    }
-    
-    // 直接检查需要检查的链接
-    const batchSize = 10;
-    const processDirectCheck = async (item) => {
-      const result = await checkLinkDirectly(item.link, item.name);
-      cfStatus[item.link] = {
-        success: result.success,
-        status: result.status,
-        latency: result.latency,
-        error: result.error,
-        timestamp: formatShanghaiTime(new Date())
-      };
-
+    // 直接检查所有链接
+    const processCheck = async (item) => {
+      const result = await checkLink(item.link, item.name);
+      
       return {
         name: item.name,
         link: item.link,
-        favicon: item.favicon,  // 保留favicon信息
+        favicon: item.favicon,
         latency: result.latency,
-        success: result.success
+        success: result.success,
+        status: result.status,
+        error: result.error
       };
     };
 
-    const directResults = needDirectCheck.length > 0 
-      ? await batchProcess(needDirectCheck, batchSize, processDirectCheck)
-      : [];
-
-    // 合并结果
-    const finalResults = apiResults.map(item => {
-      if (!item.needDirectCheck) {
-        // 使用小小API的结果
-        return {
-          name: item.name,
-          link: item.link,
-          favicon: item.favicon,  // 保留favicon信息
-          latency: item.latency,
-          success: item.success
-        };
-      } else {
-        // 使用直接检查的结果
-        const directResult = directResults.find(r => r.link === item.link);
-        if (directResult) {
-          return {
-            name: item.name,
-            link: item.link,
-            favicon: item.favicon,  // 保留favicon信息
-            latency: directResult.latency,
-            success: directResult.success
-          };
-        }
-        // 如果都失败了
-        return {
-          name: item.name,
-          link: item.link,
-          favicon: item.favicon,  // 保留favicon信息
-          latency: -1,
-          success: false
-        };
-      }
-    });
+    const checkResults = await batchProcess(linksToCheck, processCheck);
 
     // 获取异常次数记录
     const errorCount = await loadErrorCount();
     
     // 根据最终检测结果更新异常次数
-    const finalResultsWithErrorCount = finalResults.map(item => {
+    const finalResultsWithErrorCount = checkResults.map(item => {
       const domain = extractDomain(item.link);
       const currentErrorCount = errorCount[domain] || 0;
       
@@ -387,7 +225,9 @@ async function checkAllLinks() {
     });
 
     // 保存更新后的异常次数
-    await saveErrorCount(errorCount);
+    if (CONFIG.output.save_error_count) {
+      await saveErrorCount(errorCount);
+    }
 
     const now = new Date();
 
@@ -402,7 +242,7 @@ async function checkAllLinks() {
     
     console.log('📝 整理检测结果...');
     
-    return { resultData, cfStatus, xiaoxiaoStatus };
+    return { resultData };
   } catch (error) {
     console.error(`checkAllLinks 错误: ${error.message}`);
     throw error;
@@ -411,20 +251,24 @@ async function checkAllLinks() {
 
 async function ensureOutputDir() {
   try {
-    await fs.access(OUTPUT_DIR);
+    await fs.access(CONFIG.output.directory);
   } catch {
-    await fs.mkdir(OUTPUT_DIR, { recursive: true });
+    await fs.mkdir(CONFIG.output.directory, { recursive: true });
   }
 }
 
 async function saveResults() {
   try {
+    // 首先加载配置
+    CONFIG = await loadConfig();
+    console.log('✅ 配置文件加载成功');
+    
     await ensureOutputDir();
     
     console.log('🚀 开始检测友情链接...');
     console.log('=' * 50);
     
-    const { resultData, cfStatus, xiaoxiaoStatus } = await checkAllLinks();
+    const { resultData } = await checkAllLinks();
     
     console.log('=' * 50);
     console.log('📊 检测统计:');
@@ -435,32 +279,20 @@ async function saveResults() {
     
     // 保存主要状态数据
     await fs.writeFile(
-      path.join(OUTPUT_DIR, 'status.json'),
+      path.join(CONFIG.output.directory, 'status.json'),
       JSON.stringify(resultData, null, 2),
-      'utf8'
-    );
-    
-    // 保存CF检测状态
-    await fs.writeFile(
-      path.join(OUTPUT_DIR, 'status-cf.json'),
-      JSON.stringify(cfStatus, null, 2),
-      'utf8'
-    );
-    
-    // 保存小小API检测状态
-    await fs.writeFile(
-      path.join(OUTPUT_DIR, 'status-xiaoxiao.json'),
-      JSON.stringify(xiaoxiaoStatus, null, 2),
       'utf8'
     );
     
     console.log('💾 检测完成！结果已保存到output文件夹');
     console.log('📁 生成的文件:');
     console.log('   - status.json (主要检测结果)');
-    console.log('   - status-cf.json (直接检测状态)');
-    console.log('   - status-xiaoxiao.json (API检测状态)');
-    console.log('   - error-count.json (异常次数记录)');
-    console.log('   - index.html (可视化展示页面)');
+    if (CONFIG.output.save_error_count) {
+      console.log('   - error-count.json (异常次数记录)');
+    }
+    if (CONFIG.output.generate_html) {
+      console.log('   - index.html (可视化展示页面)');
+    }
     
   } catch (error) {
     console.error('❌ 保存结果时出错:', error);
