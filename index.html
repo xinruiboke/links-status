@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>友情链接状态检测</title>
+    <title>新锐博客友链状态检测</title>
+    <link rel="icon" href="/favicon.png">    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdmirror.com/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script>
@@ -105,7 +106,7 @@
     </div>
 
     <script>
-        // 加载数据函数
+        // 加载数据函数 - 从/status.json获取数据
         async function loadData() {
             const linksContainer = document.getElementById('linksContainer');
             const refreshBtn = document.getElementById('refreshBtn');
@@ -122,36 +123,21 @@
             refreshBtn.innerHTML = '<i class="fa fa-circle-o-notch fa-spin mr-1"></i> 刷新中...';
             
             try {
-                // 模拟API请求延迟
-                await new Promise(resolve => setTimeout(resolve, 600));
+                // 从/status.json获取数据
+                const response = await fetch('/status.json');
                 
-                // 模拟数据
-                const data = {
-                    total_count: 12,
-                    accessible_count: 9,
-                    inaccessible_count: 3,
-                    timestamp: new Date().toLocaleString(),
-                    link_status: [
-                        { name: "百度", link: "https://www.baidu.com", success: true, latency: 0.32, favicon: "https://www.baidu.com/favicon.ico" },
-                        { name: "谷歌", link: "https://www.google.com", success: false, latency: 0, favicon: "https://www.google.com/favicon.ico" },
-                        { name: "GitHub", link: "https://github.com", success: true, latency: 0.67, favicon: "https://github.com/favicon.ico" },
-                        { name: "Stack Overflow", link: "https://stackoverflow.com", success: true, latency: 0.45, favicon: "https://stackoverflow.com/favicon.ico" },
-                        { name: "掘金", link: "https://juejin.cn", success: true, latency: 0.28, favicon: "https://juejin.cn/favicon.ico" },
-                        { name: "知乎", link: "https://www.zhihu.com", success: true, latency: 0.35, favicon: "https://www.zhihu.com/favicon.ico" },
-                        { name: "CSDN", link: "https://www.csdn.net", success: true, latency: 0.52, favicon: "https://www.csdn.net/favicon.ico" },
-                        { name: "Twitter", link: "https://twitter.com", success: false, latency: 0, favicon: "https://twitter.com/favicon.ico" },
-                        { name: "Facebook", link: "https://facebook.com", success: false, latency: 0, favicon: "https://facebook.com/favicon.ico" },
-                        { name: "Vue.js", link: "https://vuejs.org", success: true, latency: 0.72, favicon: "https://vuejs.org/favicon.ico" },
-                        { name: "React", link: "https://reactjs.org", success: true, latency: 0.61, favicon: "https://reactjs.org/favicon.ico" },
-                        { name: "Tailwind CSS", link: "https://tailwindcss.com", success: true, latency: 0.48, favicon: "https://tailwindcss.com/favicon.ico" }
-                    ]
-                };
+                // 检查请求是否成功
+                if (!response.ok) {
+                    throw new Error(`HTTP错误，状态码: ${response ${response.status}`);
+                }
+                
+                const data = await response.json();
                 
                 // 更新统计信息
                 document.getElementById('totalCount').textContent = data.total_count;
                 document.getElementById('accessibleCount').textContent = data.accessible_count;
                 document.getElementById('inaccessibleCount').textContent = data.inaccessible_count;
-                document.getElementById('lastUpdate').textContent = data.timestamp.split(' ')[1];
+                document.getElementById('lastUpdate').textContent = data.timestamp ? data.timestamp.split(' ')[1] : '-';
                 
                 // 更新链接列表
                 linksContainer.innerHTML = '';
@@ -215,7 +201,7 @@
                 }
                 
                 // 更新时间戳
-                document.getElementById('timestamp').textContent = `最后更新时间: ${data.timestamp}`;
+                document.getElementById('timestamp').textContent = `最后更新时间: ${data.timestamp || '未知'}`;
                 
             } catch (error) {
                 console.error('加载数据失败:', error);
