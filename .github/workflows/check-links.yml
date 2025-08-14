@@ -38,31 +38,45 @@ jobs:
       
     - name: 保存检测结果
       run: |
-        echo "检测结果已保存到 output/ 文件夹"
-        ls -la output/
+        echo "检测结果已保存到 page/ 文件夹"
+        ls -la page/
         echo "文件内容预览:"
         echo "=== status.json ==="
-        head -20 output/status.json
+        head -20 page/status.json
         echo "=== error-count.json ==="
-        head -10 output/error-count.json
+        head -10 page/error-count.json
         
     - name: 配置Git用户
       run: |
         git config --global user.name "GitHub Actions Bot"
         git config --global user.email "actions@github.com"
         
-    - name: 提交检测结果到主分支
+    - name: 检出page分支
       run: |
-        # 只添加output目录的内容
-        git add output/
+        git checkout -b page || git checkout page
+        git pull origin page || echo "page分支不存在，将创建新分支"
+        
+    - name: 提交检测结果到page分支
+      run: |
+        # 清空page分支内容（保留.git目录）
+        find . -mindepth 1 -not -path './.git*' -not -path './page*' -delete
+        # 移动page目录内容到根目录
+        mv page/* . 2>/dev/null || true
+        rmdir page 2>/dev/null || true
+        # 添加所有文件
+        git add .
         # 提交更改
         git commit -m "更新链接检测结果 - $(date '+%Y-%m-%d %H:%M:%S')" || echo "没有新的更改"
-        # 推送到主分支
-        git push origin ${{ github.ref_name }}
+        # 推送到page分支
+        git push origin page
         
     - name: 上传检测结果作为Artifact
       uses: actions/upload-artifact@v4
       with:
         name: link-status-results
-        path: output/
+        path: |
+          page/
+          *.json
+          *.html
+          *.png
         retention-days: 30 

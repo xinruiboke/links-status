@@ -34,7 +34,7 @@ request_headers:
 # 输出配置
 output:
   # 输出目录
-  directory: "./output"
+  directory: "./page"
   # 是否生成HTML报告
   generate_html: true
   # 是否保存错误计数

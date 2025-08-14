@@ -257,6 +257,28 @@ async function ensureOutputDir() {
   }
 }
 
+async function copyStaticFiles() {
+  try {
+    console.log('📁 复制静态文件...');
+    
+    // 复制index.html
+    const sourceHtml = path.join('./output', 'index.html');
+    const targetHtml = path.join(CONFIG.output.directory, 'index.html');
+    await fs.copyFile(sourceHtml, targetHtml);
+    console.log('✅ index.html 已复制');
+    
+    // 复制favicon.png
+    const sourceFavicon = path.join('./output', 'favicon.png');
+    const targetFavicon = path.join(CONFIG.output.directory, 'favicon.png');
+    await fs.copyFile(sourceFavicon, targetFavicon);
+    console.log('✅ favicon.png 已复制');
+    
+  } catch (error) {
+    console.error('❌ 复制静态文件失败:', error.message);
+    // 不退出程序，因为静态文件不是必需的
+  }
+}
+
 async function saveResults() {
   try {
     // 首先加载配置
@@ -284,15 +306,17 @@ async function saveResults() {
       'utf8'
     );
     
-    console.log('💾 检测完成！结果已保存到output文件夹');
+    // 复制静态文件
+    await copyStaticFiles();
+    
+    console.log('💾 检测完成！结果已保存到page文件夹');
     console.log('📁 生成的文件:');
     console.log('   - status.json (主要检测结果)');
     if (CONFIG.output.save_error_count) {
       console.log('   - error-count.json (异常次数记录)');
     }
-    if (CONFIG.output.generate_html) {
-      console.log('   - index.html (可视化展示页面)');
-    }
+    console.log('   - index.html (可视化展示页面)');
+    console.log('   - favicon.png (网站图标)');
     
   } catch (error) {
     console.error('❌ 保存结果时出错:', error);
