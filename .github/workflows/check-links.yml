@@ -52,10 +52,8 @@ jobs:
         
     - name: 提交检测结果到主分支
       run: |
-        # 复制检测结果到根目录
-        cp -r output/* ./
-        # 添加所有文件
-        git add .
+        # 只添加output目录的内容
+        git add output/
         # 提交更改
         git commit -m "更新链接检测结果 - $(date '+%Y-%m-%d %H:%M:%S')" || echo "没有新的更改"
         # 推送到主分支
