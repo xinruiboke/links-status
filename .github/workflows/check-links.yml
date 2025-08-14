@@ -31,7 +31,10 @@ jobs:
       run: npm install
       
     - name: 检测链接状态
-      run: npm run check
+      run: |
+        echo "开始检测友情链接状态..."
+        npm run check
+        echo "检测完成！"
       
     - name: 保存检测结果
       run: |
@@ -40,10 +43,6 @@ jobs:
         echo "文件内容预览:"
         echo "=== status.json ==="
         head -20 output/status.json
-        echo "=== status-cf.json ==="
-        head -10 output/status-cf.json
-        echo "=== status-xiaoxiao.json ==="
-        head -10 output/status-xiaoxiao.json
         echo "=== error-count.json ==="
         head -10 output/error-count.json
         
