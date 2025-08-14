@@ -53,8 +53,10 @@ jobs:
         
     - name: 检出page分支
       run: |
-        git checkout -b page || git checkout page
-        git pull origin page || echo "page分支不存在，将创建新分支"
+        # 尝试检出page分支，如果不存在则创建
+        git checkout -b page 2>/dev/null || git checkout page
+        # 尝试拉取远程更改，如果失败则重置分支
+        git pull origin page || (echo "无法拉取远程更改，重置分支" && git reset --hard HEAD)
         
     - name: 提交检测结果到page分支
       run: |
@@ -67,8 +69,8 @@ jobs:
         git add .
         # 提交更改
         git commit -m "更新链接检测结果 - $(date '+%Y-%m-%d %H:%M:%S')" || echo "没有新的更改"
-        # 推送到page分支
-        git push origin page
+        # 尝试推送到page分支，如果失败则强制推送
+        git push origin page || git push origin page --force-with-lease
         
     - name: 上传检测结果作为Artifact
       uses: actions/upload-artifact@v4
