@@ -27,10 +27,14 @@ jobs:
     - name: 检测链接状态
       run: npm run check
       
-    - name: 提交检测结果
+    - name: 保存检测结果
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add output/
-        git diff --quiet && git diff --staged --quiet || git commit -m "更新链接状态检测结果 - $(date -u +'%Y-%m-%d %H:%M:%S') UTC"
-        git push 
+        echo "检测结果已保存到 output/ 文件夹"
+        ls -la output/
+        echo "文件内容预览:"
+        echo "=== status.json ==="
+        head -20 output/status.json
+        echo "=== status-cf.json ==="
+        head -10 output/status-cf.json
+        echo "=== status-xiaoxiao.json ==="
+        head -10 output/status-xiaoxiao.json 
