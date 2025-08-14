@@ -5,9 +5,10 @@
 ## ✨ 功能特性
 
 - 🔍 **直接检测**：使用HTTP请求直接检测链接状态，无需依赖第三方API
-- 🔄 **重试机制**：支持配置重试次数和间隔，提高检测可靠性
+- 🔄 **重试机制**：支持配置直接访问重试次数和间隔
+- 🔧 **备用检测**：直接访问失败后使用小小API进行备用检测
 - ⚡ **并发处理**：支持批量并发检测，提高检测效率
-- 📊 **详细报告**：生成包含延迟、状态码、异常次数、重试次数等详细信息的检测报告
+- 📊 **详细报告**：生成包含延迟、状态码、异常次数、重试次数、检测方法等详细信息的检测报告
 - 🌐 **Web界面**：提供响应式Web界面展示检测结果
 - 🤖 **自动运行**：通过GitHub Actions实现定时自动检测
 - 📈 **异常统计**：记录并统计链接的异常次数，便于问题追踪
@@ -119,9 +120,11 @@ detection:
   success_status_min: 200           # 成功状态码范围（最小值）
   success_status_max: 399           # 成功状态码范围（最大值）
   retry:                            # 重试配置
-    max_attempts: 3                 # 最大重试次数
+    max_attempts: 3                 # 直接访问最大重试次数
     delay: 1000                     # 重试间隔（毫秒）
     enabled: true                   # 是否启用重试机制
+    use_xiaoxiao_api: true          # 是否启用小小API作为备用检测
+    xiaoxiao_api_url: "https://v2.xxapi.cn/api/status"  # 小小API地址
 
 # 检测请求头配置
 request_headers:
@@ -154,9 +157,11 @@ timezone:
 - `detection.batch_delay`: 批次间的延迟时间，避免请求过于频繁
 - `detection.timeout`: 单个链接的检测超时时间
 - `detection.success_status_min/max`: 成功状态码的范围
-- `detection.retry.max_attempts`: 最大重试次数（默认3次）
+- `detection.retry.max_attempts`: 直接访问最大重试次数（默认3次）
 - `detection.retry.delay`: 重试间隔时间（毫秒）
 - `detection.retry.enabled`: 是否启用重试机制
+- `detection.retry.use_xiaoxiao_api`: 是否启用小小API作为备用检测
+- `detection.retry.xiaoxiao_api_url`: 小小API地址
 
 #### 请求头配置
 - `request_headers`: 检测链接时使用的HTTP请求头
@@ -171,7 +176,8 @@ timezone:
 
 ### 检测方式
 - **直接HTTP检测**：对每个链接发送HTTP请求，检查响应状态码
-- **重试机制**：支持配置重试次数和间隔，提高检测可靠性
+- **重试机制**：支持配置直接访问重试次数和间隔
+- **备用API检测**：直接访问失败后使用小小API进行备用检测
 - **并发控制**：根据配置的批次大小进行并发处理
 - **超时设置**：单个链接检测超时时间可配置
 - **状态判断**：HTTP状态码范围可配置（默认200-399）
@@ -179,8 +185,9 @@ timezone:
 ### 异常处理
 - **异常计数**：记录每个域名的连续异常次数
 - **自动恢复**：当链接恢复正常时，自动重置异常计数
-- **重试机制**：支持配置重试次数和间隔，提高检测成功率
-- **错误日志**：详细记录检测过程中的错误信息和重试次数
+- **重试机制**：支持配置直接访问重试次数和间隔
+- **备用检测**：直接访问失败后使用小小API进行备用检测
+- **错误日志**：详细记录检测过程中的错误信息、重试次数和检测方法
 
 ## 📊 输出文件说明
 
@@ -201,7 +208,8 @@ timezone:
       "success": true,
       "status": 200,
       "error_count": 0,
-      "attempts": 1
+      "attempts": 1,
+      "method": "direct"
     },
     {
       "name": "重试成功的网站",
@@ -211,7 +219,19 @@ timezone:
       "success": true,
       "status": 200,
       "error_count": 0,
-      "attempts": 2
+      "attempts": 2,
+      "method": "direct"
+    },
+    {
+      "name": "API检测成功的网站",
+      "link": "https://example3.com",
+      "favicon": "https://example3.com/favicon.ico",
+      "latency": 0.95,
+      "success": true,
+      "status": 200,
+      "error_count": 0,
+      "attempts": 4,
+      "method": "xiaoxiao_api"
     }
   ]
 }

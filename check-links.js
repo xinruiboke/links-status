@@ -107,14 +107,84 @@ async function fetchSourceLinks() {
   }
 }
 
+async function checkWithXiaoxiaoAPI(url, name) {
+  if (!CONFIG.detection.retry.use_xiaoxiao_api) {
+    return null;
+  }
+  
+  try {
+    console.log(`🔍 ${name}: 使用小小API检测...`);
+    const apiUrl = `${CONFIG.detection.retry.xiaoxiao_api_url}?url=${encodeURIComponent(url)}`;
+    const startTime = Date.now();
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+      },
+      timeout: CONFIG.detection.timeout
+    });
+    
+    const latency = Math.round((Date.now() - startTime) / 10) / 100;
+    
+    if (response.ok) {
+      const data = await response.json();
+      const statusCode = parseInt(data.data);
+      const success = parseInt(data.code) === 200 && (statusCode >= 200 && statusCode < 400);
+      
+      if (success) {
+        console.log(`✅ ${name}: 小小API检测成功 (状态码: ${statusCode}, 延迟: ${latency}s)`);
+        return {
+          success: true,
+          latency: latency,
+          status: statusCode,
+          attempts: 4, // 表示使用了小小API
+          method: 'xiaoxiao_api'
+        };
+      } else {
+        console.log(`❌ ${name}: 小小API检测失败 (状态码: ${statusCode})`);
+        return {
+          success: false,
+          latency: -1,
+          status: statusCode,
+          attempts: 4,
+          method: 'xiaoxiao_api',
+          error: `小小API检测失败，状态码: ${statusCode}`
+        };
+      }
+    } else {
+      console.log(`❌ ${name}: 小小API请求失败 (HTTP ${response.status})`);
+      return {
+        success: false,
+        latency: -1,
+        status: 0,
+        attempts: 4,
+        method: 'xiaoxiao_api',
+        error: `小小API请求失败，HTTP ${response.status}`
+      };
+    }
+  } catch (error) {
+    console.error(`❌ ${name}: 小小API检测异常 - ${error.message}`);
+    return {
+      success: false,
+      latency: -1,
+      status: 0,
+      attempts: 4,
+      method: 'xiaoxiao_api',
+      error: `小小API检测异常: ${error.message}`
+    };
+  }
+}
+
 async function checkLinkWithRetry(url, name) {
   const maxAttempts = CONFIG.detection.retry.enabled ? CONFIG.detection.retry.max_attempts : 1;
   const retryDelay = CONFIG.detection.retry.delay;
   
+  // 先进行直接访问重试
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       if (attempt > 1) {
-        console.log(`🔄 ${name}: 第${attempt}次重试...`);
+        console.log(`🔄 ${name}: 第${attempt}次直接访问重试...`);
         // 重试前等待
         await new Promise(resolve => setTimeout(resolve, retryDelay));
       } else {
@@ -134,41 +204,49 @@ async function checkLinkWithRetry(url, name) {
       
       if (success) {
         if (attempt > 1) {
-          console.log(`✅ ${name}: 第${attempt}次重试成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
+          console.log(`✅ ${name}: 第${attempt}次直接访问重试成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
         } else {
-          console.log(`✅ ${name}: 检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
+          console.log(`✅ ${name}: 直接访问检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
         }
         
         return {
           success: true,
           latency: latency,
           status: response.status,
-          attempts: attempt
+          attempts: attempt,
+          method: 'direct'
         };
       } else {
         if (attempt < maxAttempts) {
-          console.log(`⚠️  ${name}: 第${attempt}次检测失败 (状态码: ${response.status}), 准备重试...`);
+          console.log(`⚠️  ${name}: 第${attempt}次直接访问失败 (状态码: ${response.status}), 准备重试...`);
         } else {
-          console.log(`❌ ${name}: 第${attempt}次检测失败 (状态码: ${response.status}), 已达到最大重试次数`);
+          console.log(`⚠️  ${name}: 第${maxAttempts}次直接访问失败 (状态码: ${response.status}), 尝试使用小小API...`);
         }
       }
       
     } catch (error) {
       if (attempt < maxAttempts) {
-        console.log(`⚠️  ${name}: 第${attempt}次检测异常 - ${error.message}, 准备重试...`);
+        console.log(`⚠️  ${name}: 第${attempt}次直接访问异常 - ${error.message}, 准备重试...`);
       } else {
-        console.error(`❌ ${name}: 第${attempt}次检测异常 - ${error.message}, 已达到最大重试次数`);
+        console.log(`⚠️  ${name}: 第${maxAttempts}次直接访问异常 - ${error.message}, 尝试使用小小API...`);
       }
     }
   }
   
-  // 所有重试都失败了
+  // 直接访问都失败了，尝试使用小小API
+  const xiaoxiaoResult = await checkWithXiaoxiaoAPI(url, name);
+  if (xiaoxiaoResult && xiaoxiaoResult.success) {
+    return xiaoxiaoResult;
+  }
+  
+  // 所有检测方法都失败了
   return {
     success: false,
     latency: -1,
     status: 0,
-    error: `经过${maxAttempts}次尝试后仍然失败`,
-    attempts: maxAttempts
+    error: `经过${maxAttempts}次直接访问和小小API检测后仍然失败`,
+    attempts: maxAttempts + 1,
+    method: 'all_failed'
   };
 }
 
@@ -222,7 +300,8 @@ async function checkAllLinks() {
         success: result.success,
         status: result.status,
         error: result.error,
-        attempts: result.attempts || 1
+        attempts: result.attempts || 1,
+        method: result.method || 'direct'
       };
     };
 
@@ -362,3 +441,4 @@ async function saveResults() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   saveResults();
 }
+
