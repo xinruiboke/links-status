@@ -42,6 +42,7 @@ function formatShanghaiTime(date) {
 
 async function fetchSourceLinks() {
   try {
+    console.log(`📡 从 ${SOURCE_URL} 获取友情链接数据...`);
     const response = await fetch(SOURCE_URL, {
       headers: SOURCE_HEADERS,
       redirect: 'follow'
@@ -52,15 +53,17 @@ async function fetchSourceLinks() {
     }
     
     const data = await response.json();
+    console.log('✅ 源数据获取成功');
     return data;
   } catch (error) {
-    console.error(`fetchSourceLinks 错误: ${error.message}`);
+    console.error(`❌ fetchSourceLinks 错误: ${error.message}`);
     throw new Error(`获取源数据失败: ${error.message}`);
   }
 }
 
-async function checkLinkDirectly(url) {
+async function checkLinkDirectly(url, name) {
   try {
+    console.log(`🔍 直接检测 ${name} (${url})...`);
     const startTime = Date.now();
     const response = await fetch(url, {
       headers: HEADERS,
@@ -68,13 +71,20 @@ async function checkLinkDirectly(url) {
     });
     const latency = Math.round((Date.now() - startTime) / 10) / 100;
     
+    const success = response.status === 200;
+    if (success) {
+      console.log(`✅ ${name}: 直接检测成功 (状态码: ${response.status}, 延迟: ${latency}s)`);
+    } else {
+      console.log(`❌ ${name}: 直接检测失败 (状态码: ${response.status})`);
+    }
+    
     return {
-      success: response.status === 200,
-      latency: response.status === 200 ? latency : -1,
+      success,
+      latency: success ? latency : -1,
       status: response.status
     };
   } catch (error) {
-    console.error(`checkLinkDirectly 错误 (${url}): ${error.message}`);
+    console.error(`❌ ${name}: 直接检测异常 - ${error.message}`);
     return {
       success: false,
       latency: -1,
@@ -106,6 +116,7 @@ async function checkWithAPI(items) {
   const processItem = async (item) => {
     const url = item.link;
     if (!url) {
+      console.log(`❌ ${item.name}: 链接为空`);
       return {
         ...item,
         success: false,
@@ -115,6 +126,7 @@ async function checkWithAPI(items) {
     }
 
     try {
+      console.log(`🔍 检测 ${item.name} (${url}) - 使用小小API...`);
       const apiUrl = `https://v2.xxapi.cn/api/status?url=${encodeURIComponent(url)}`;
       const response = await fetch(apiUrl, {
         headers: SOURCE_HEADERS,
@@ -137,6 +149,12 @@ async function checkWithAPI(items) {
         // 如果API返回的状态码不是2xx或3xx，需要直接检查
         const needDirectCheck = !success;
 
+        if (success) {
+          console.log(`✅ ${item.name}: API检测成功 (状态码: ${statusCode}, 延迟: ${data.latency || 0}s)`);
+        } else {
+          console.log(`⚠️  ${item.name}: API检测失败 (状态码: ${statusCode}), 将进行直接检测`);
+        }
+
         return {
           ...item,
           success,
@@ -144,6 +162,7 @@ async function checkWithAPI(items) {
           needDirectCheck
         };
       } else {
+        console.log(`❌ ${item.name}: API请求失败 (HTTP ${response.status})`);
         xiaoxiaoStatus[url] = {
           success: false,
           status: 0,
@@ -160,7 +179,7 @@ async function checkWithAPI(items) {
         };
       }
     } catch (error) {
-      console.error(`checkWithAPI 错误 (${url}): ${error.message}`);
+      console.error(`❌ ${item.name}: API检测异常 - ${error.message}`);
       xiaoxiaoStatus[url] = {
         success: false,
         status: 0,
@@ -187,6 +206,7 @@ async function checkWithAPI(items) {
 
 async function checkAllLinks() {
   try {
+    console.log('📡 获取源数据...');
     const sourceData = await fetchSourceLinks();
     
     // 适配新的JSON结构：从friends数组获取数据，并转换为对象格式
@@ -200,6 +220,9 @@ async function checkAllLinks() {
       link: friend[1],       // 链接在数组第二个位置
       favicon: friend[2]     // 图标URL在数组第三个位置
     }));
+    
+    console.log(`📋 获取到 ${linksToCheck.length} 个友情链接`);
+    console.log('🔍 开始API检测...');
 
     const cfStatus = {};
     
@@ -209,10 +232,16 @@ async function checkAllLinks() {
     // 找出需要直接检查的链接
     const needDirectCheck = apiResults.filter(item => item.needDirectCheck);
     
+    if (needDirectCheck.length > 0) {
+      console.log(`🔍 开始直接检测 ${needDirectCheck.length} 个链接...`);
+    } else {
+      console.log('✅ 所有链接API检测完成，无需直接检测');
+    }
+    
     // 直接检查需要检查的链接
     const batchSize = 10;
     const processDirectCheck = async (item) => {
-      const result = await checkLinkDirectly(item.link);
+      const result = await checkLinkDirectly(item.link, item.name);
       cfStatus[item.link] = {
         success: result.success,
         status: result.status,
@@ -279,6 +308,8 @@ async function checkAllLinks() {
       link_status: finalResults
     };
     
+    console.log('📝 整理检测结果...');
+    
     return { resultData, cfStatus, xiaoxiaoStatus };
   } catch (error) {
     console.error(`checkAllLinks 错误: ${error.message}`);
@@ -298,8 +329,17 @@ async function saveResults() {
   try {
     await ensureOutputDir();
     
-    console.log('开始检测友情链接...');
+    console.log('🚀 开始检测友情链接...');
+    console.log('=' * 50);
+    
     const { resultData, cfStatus, xiaoxiaoStatus } = await checkAllLinks();
+    
+    console.log('=' * 50);
+    console.log('📊 检测统计:');
+    console.log(`✅ 可访问链接: ${resultData.accessible_count}`);
+    console.log(`❌ 不可访问链接: ${resultData.inaccessible_count}`);
+    console.log(`📈 总链接数: ${resultData.total_count}`);
+    console.log(`📅 检测时间: ${resultData.timestamp}`);
     
     // 保存主要状态数据
     await fs.writeFile(
@@ -322,13 +362,15 @@ async function saveResults() {
       'utf8'
     );
     
-    console.log('检测完成！结果已保存到output文件夹');
-    console.log(`可访问链接: ${resultData.accessible_count}`);
-    console.log(`不可访问链接: ${resultData.inaccessible_count}`);
-    console.log(`总链接数: ${resultData.total_count}`);
+    console.log('💾 检测完成！结果已保存到output文件夹');
+    console.log('📁 生成的文件:');
+    console.log('   - status.json (主要检测结果)');
+    console.log('   - status-cf.json (直接检测状态)');
+    console.log('   - status-xiaoxiao.json (API检测状态)');
+    console.log('   - index.html (可视化展示页面)');
     
   } catch (error) {
-    console.error('保存结果时出错:', error);
+    console.error('❌ 保存结果时出错:', error);
     process.exit(1);
   }
 }
