@@ -1,7 +1,7 @@
 {
-  "timestamp": "2025-08-14 14:00:49",
-  "accessible_count": 19,
-  "inaccessible_count": 1,
+  "timestamp": "2025-08-14 14:03:47",
+  "accessible_count": 18,
+  "inaccessible_count": 2,
   "total_count": 20,
   "link_status": [
     {
@@ -57,7 +57,7 @@
       "name": "OKang",
       "link": "https://okang.top/",
       "favicon": "https://www.okang.top/wp-content/uploads/2025/04/logo-300x300.jpg",
-      "latency": 3.05,
+      "latency": 0,
       "success": true
     },
     {
@@ -78,15 +78,15 @@
       "name": "广然笔记",
       "link": "https://www.grbj.cn",
       "favicon": "https://www.grbj.cn/favicon.ico",
-      "latency": 0.55,
+      "latency": 0.56,
       "success": true
     },
     {
       "name": "淇云博客",
       "link": "https://www.pengqi.club",
       "favicon": "https://tc.pengqi.club/img/2023/01/17/CcxI.png",
-      "latency": 0,
-      "success": true
+      "latency": -1,
+      "success": false
     },
     {
       "name": "码上星辰的技术札记",
