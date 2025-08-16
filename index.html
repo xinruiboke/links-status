@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>友情链接状态检测</title>
+    <link rel="icon" href="/favicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdmirror.com/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .row-hover {
+                @apply transition-colors duration-200 hover:bg-gray-50;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+    <div class="container max-w-6xl mx-auto p-4 md:p-6">
+        <!-- 页面头部 -->
+        <header class="mb-8 py-6 border-b border-gray-200">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">友情链接状态检测</h1>
+            <p class="text-gray-500 mt-1">监控网站根目录status.json中的链接状态数据</p>
+        </header>
+        
+        <!-- 统计数据 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <div class="text-sm text-gray-500">总链接数</div>
+                <div class="text-2xl font-semibold mt-1" id="totalCount">-</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <div class="text-sm text-gray-500">可访问</div>
+                <div class="text-2xl font-semibold mt-1 text-success" id="accessibleCount">-</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <div class="text-sm text-gray-500">不可访问</div>
+                <div class="text-2xl font-semibold mt-1 text-danger" id="inaccessibleCount">-</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <div class="text-sm text-gray-500">最后更新</div>
+                <div class="text-lg font-semibold mt-1" id="lastUpdate">-</div>
+            </div>
+        </div>
+        
+        <!-- 主要内容区 -->
+        <div class="mb-6">
+            <button id="refreshBtn" class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors">
+                <i class="fa fa-refresh mr-1"></i> 刷新数据
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden mb-6 shadow-sm">
+            <div class="p-4 border-b border-gray-200">
+                <h2 class="font-semibold text-gray-900">链接状态列表</h2>
+            </div>
+            
+            <div id="linksContainer" class="p-6 text-center text-gray-500">
+                <div class="inline-block w-8 h-8 border-2 border-gray-200 border-t-primary rounded-full animate-spin mb-3"></div>
+                <p>正在读取根目录status.json文件...</p>
+            </div>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer class="text-center text-gray-500 text-sm">
+            <div id="timestamp">最后更新时间: 加载中...</div>
+        </footer>
+    </div>
+
+    <script>
+        async function loadData() {
+            const linksContainer = document.getElementById('linksContainer');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const originalBtnText = refreshBtn.innerHTML;
+            
+            // 显示加载状态
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 加载中...';
+            
+            try {
+                const response = await fetch('./status.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // 更新统计信息
+                document.getElementById('totalCount').textContent = data.total_count || 0;
+                document.getElementById('accessibleCount').textContent = data.accessible_count || 0;
+                document.getElementById('inaccessibleCount').textContent = data.inaccessible_count || 0;
+                document.getElementById('lastUpdate').textContent = data.timestamp ? data.timestamp.split(' ')[1] : '未知';
+                
+                // 更新链接列表
+                linksContainer.innerHTML = '';
+                
+                if (data.link_status && data.link_status.length > 0) {
+                    const table = document.createElement('table');
+                    table.className = 'min-w-full divide-y divide-gray-200';
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">链接名称</th>
+                                <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                                <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                                <th class="px-4 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">响应时间</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="linksTableBody"></tbody>
+                    `;
+                    
+                    linksContainer.appendChild(table);
+                    const tableBody = document.getElementById('linksTableBody');
+                    
+                    data.link_status.forEach((link, index) => {
+                        const row = document.createElement('tr');
+                        row.className = 'row-hover';
+                        row.style.animationDelay = `${index * 0.05}s`;
+                        row.classList.add('animate-fade-in');
+                        
+                        const statusText = link.success ? '正常' : '异常';
+                        const statusClass = link.success ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger';
+                        const latencyText = link.latency > 0 ? `${link.latency}s` : '-';
+                        
+                        row.innerHTML = `
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <img src="${link.favicon || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0xMiAxOEMxNS4zMTM3IDE4IDE4IDE1LjMxMzcgMTggMTJIMTZDMTYgMTQuMjA5MSAxNC4yMDkxIDE2IDEyIDE2QzkuNzkwODYgMTYgOCAxNC4yMDkxIDggMTJINkM2IDE1LjMxMzcgOC42ODYyOSAxOCAxMiAxOFoiIGZpbGw9IiM5Q0EzQUYiLz4KPC9zdmc+'}" 
+                                         alt="${link.name}的图标" 
+                                         class="w-5 h-5 mr-2 rounded" 
+                                         onerror="this.style.display='none'">
+                                    <span class="font-medium">${link.name || '未知名称'}</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="text-sm text-gray-600 break-all max-w-xs">${link.link || '无URL'}</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">${statusText}</span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">${latencyText}</td>
+                        `;
+                        
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    linksContainer.innerHTML = `
+                        <div class="py-8 text-center">
+                            <i class="fa fa-link text-gray-300 text-4xl mb-3"></i>
+                            <p class="text-gray-500">status.json中没有链接数据</p>
+                        </div>
+                    `;
+                }
+                
+                // 更新时间戳
+                document.getElementById('timestamp').textContent = `最后更新时间: ${data.timestamp || '未知'}`;
+                
+            } catch (error) {
+                console.error('读取status.json失败:', error);
+                linksContainer.innerHTML = `
+                    <div class="py-8 text-center text-danger">
+                        <i class="fa fa-exclamation-circle mb-2"></i>
+                        <p>读取根目录status.json失败</p>
+                        <p class="text-xs mt-1 text-gray-500">${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                // 恢复刷新按钮
+                refreshBtn.disabled = false;
+                refreshBtn.innerHTML = originalBtnText;
+            }
+        }
+        
+        // 页面加载时自动加载数据
+        document.addEventListener('DOMContentLoaded', loadData);
+        
+        // 绑定刷新按钮事件
+        document.getElementById('refreshBtn').addEventListener('click', loadData);
+        
+        // 每5分钟自动刷新一次
+        setInterval(loadData, 5 * 60 * 1000);
+    </script>
+</body>
+</html>
