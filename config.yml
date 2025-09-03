@@ -3,7 +3,7 @@
 # 数据源配置
 source:
   # 友情链接数据源URL
-  url: "https://www.xrbk.cn/api/links.json"
+  url: "https://www.xrbk.cn/links.json"
   # 数据源请求头
   headers:
     Accept: "application/json"
@@ -59,4 +59,5 @@ timezone:
   # 时区偏移（小时）
   offset: 8
   # 时区名称
+
   name: "Asia/Shanghai" 
